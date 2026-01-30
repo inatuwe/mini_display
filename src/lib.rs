@@ -3,6 +3,7 @@
 pub mod image;
 pub mod port;
 pub mod protocol;
+pub mod spotify;
 pub mod text;
 
 pub use image::{
@@ -11,4 +12,5 @@ pub use image::{
 };
 pub use port::{find_display_port, is_display_connected, open_connection, PortInfo};
 pub use protocol::send_image_to_display;
+pub use spotify::{get_now_playing, NowPlaying};
 pub use text::split_into_pages;

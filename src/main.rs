@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use display_fs::{
-    create_text_image, find_display_port, image_to_rgb565_bytes, is_display_connected,
-    open_connection, send_image_to_display, split_into_pages,
+    create_text_image, find_display_port, get_now_playing, image_to_rgb565_bytes,
+    is_display_connected, open_connection, send_image_to_display, split_into_pages,
 };
 use std::process::{Command, ExitCode};
 use std::thread;
@@ -33,6 +33,8 @@ enum Commands {
     },
     /// Display text on the screen (default command)
     Show(ShowArgs),
+    /// Show currently playing Spotify track
+    Spotify(SpotifyArgs),
 }
 
 #[derive(clap::Args)]
@@ -64,6 +66,17 @@ struct ShowArgs {
     /// Speed preset (overrides --delay if provided)
     #[arg(long, value_enum)]
     speed: Option<SpeedPreset>,
+}
+
+#[derive(clap::Args)]
+struct SpotifyArgs {
+    /// Continuously update display with current track
+    #[arg(short, long)]
+    r#loop: bool,
+
+    /// Update interval in seconds (only with --loop)
+    #[arg(short, long, default_value = "2")]
+    interval: f32,
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -186,6 +199,7 @@ fn main() -> ExitCode {
         Some(Commands::Presets) => list_presets(),
         Some(Commands::Demo { delay }) => run_demo(delay),
         Some(Commands::Show(args)) => run_show(args),
+        Some(Commands::Spotify(args)) => run_spotify(args),
         None => {
             // Default: show help
             use clap::CommandFactory;
@@ -291,6 +305,81 @@ fn run_demo(delay: f32) -> ExitCode {
 
             thread::sleep(delay_duration);
         }
+    }
+}
+
+fn run_spotify(args: SpotifyArgs) -> ExitCode {
+    let port_info = match find_display_port() {
+        Some(p) => p,
+        None => {
+            println!("✗ Display FS V1 not found");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    println!("✓ Found display on {}", port_info.name);
+
+    let mut connection = match open_connection(&port_info) {
+        Ok(c) => c,
+        Err(e) => {
+            println!("✗ Failed to open connection: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let mut last_track: Option<(String, String)> = None;
+    let interval = Duration::from_secs_f32(args.interval);
+
+    loop {
+        let text = match get_now_playing() {
+            Some(np) if np.is_playing => {
+                format!(
+                    "♪ {}\nby {}",
+                    truncate(&np.track, 18),
+                    truncate(&np.artist, 18)
+                )
+            }
+            Some(np) => {
+                format!(
+                    "⏸ {}\nby {}",
+                    truncate(&np.track, 18),
+                    truncate(&np.artist, 18)
+                )
+            }
+            None => "Spotify not running".to_string(),
+        };
+
+        let current = get_now_playing().map(|np| (np.track, np.artist));
+        let should_update = current != last_track;
+
+        if should_update {
+            let img = create_text_image(&text, 14.0);
+            let image_data = image_to_rgb565_bytes(&img);
+
+            if let Err(e) = send_image_to_display(&mut connection, &image_data) {
+                println!("✗ Failed to send image: {}", e);
+                return ExitCode::FAILURE;
+            }
+
+            println!("{}", text.replace('\n', " | "));
+            last_track = current;
+        }
+
+        if !args.r#loop {
+            break;
+        }
+
+        thread::sleep(interval);
+    }
+
+    ExitCode::SUCCESS
+}
+
+fn truncate(s: &str, max_len: usize) -> String {
+    if s.chars().count() <= max_len {
+        s.to_string()
+    } else {
+        format!("{}...", s.chars().take(max_len - 3).collect::<String>())
     }
 }
 
