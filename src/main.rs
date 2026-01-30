@@ -347,7 +347,7 @@ fn run_spotify(args: SpotifyArgs) -> ExitCode {
             }
             Some(np) => {
                 format!(
-                    "⏸ {}\nby {}",
+                    "|| {}\nby {}",
                     truncate(&np.track, 18),
                     truncate(&np.artist, 18)
                 )

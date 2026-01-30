@@ -22,15 +22,25 @@ pub fn create_text_image(text: &str, font_size: f32) -> RgbImage {
 }
 
 fn draw_text(img: &mut RgbImage, text: &str, font_size: f32) {
+    use ab_glyph::{Font, ScaleFont};
+
     let font = FontRef::try_from_slice(FONT_DATA).expect("Failed to load embedded font");
     let scale = PxScale::from(font_size);
+    let scaled_font = font.as_scaled(scale);
+    let line_height = scaled_font.height();
 
-    let (text_width, text_height) = measure_text(&font, scale, text);
+    let lines: Vec<&str> = text.lines().collect();
+    let total_height = line_height * lines.len() as f32;
 
-    let x = ((DISPLAY_WIDTH as i32 - text_width as i32) / 2).max(0);
-    let y = ((DISPLAY_HEIGHT as i32 - text_height as i32) / 2).max(0);
+    let start_y = ((DISPLAY_HEIGHT as f32 - total_height) / 2.0).max(0.0) as i32;
 
-    draw_text_mut(img, Rgb([255, 255, 255]), x, y, scale, &font, text);
+    for (i, line) in lines.iter().enumerate() {
+        let (line_width, _) = measure_text(&font, scale, line);
+        let x = ((DISPLAY_WIDTH as i32 - line_width as i32) / 2).max(0);
+        let y = start_y + (i as f32 * line_height) as i32;
+
+        draw_text_mut(img, Rgb([255, 255, 255]), x, y, scale, &font, line);
+    }
 }
 
 pub fn measure_text_with_font_size(text: &str, font_size: f32) -> (u32, u32) {
