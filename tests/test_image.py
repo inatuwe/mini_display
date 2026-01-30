@@ -7,6 +7,7 @@ from src.image import (
     create_blank_image,
     draw_text,
     create_hello_world_image,
+    image_to_bytes,
     DISPLAY_WIDTH,
     DISPLAY_HEIGHT,
 )
@@ -123,3 +124,52 @@ class TestCreateHelloWorldImage:
         """Function should return an RGB image."""
         img = create_hello_world_image()
         assert img.mode == "RGB"
+
+
+class TestImageToBytes:
+    """Tests for image_to_bytes function."""
+
+    def test_converts_image_to_byte_array(self):
+        """Function should convert image to byte array."""
+        img = create_blank_image(10, 10)
+        result = image_to_bytes(img)
+        assert isinstance(result, bytes)
+
+    def test_output_size_matches_expected_rgb565(self):
+        """Output size should match width × height × 2 (RGB565 format)."""
+        width, height = 10, 10
+        img = create_blank_image(width, height)
+        result = image_to_bytes(img)
+        # RGB565 = 2 bytes per pixel
+        expected_size = width * height * 2
+        assert len(result) == expected_size
+
+    def test_output_size_for_display_dimensions(self):
+        """Output size should be correct for display dimensions."""
+        img = create_blank_image()
+        result = image_to_bytes(img)
+        # 160 * 80 * 2 = 25600 bytes
+        expected_size = DISPLAY_WIDTH * DISPLAY_HEIGHT * 2
+        assert len(result) == expected_size
+
+    def test_black_pixel_converts_to_zero(self):
+        """Black pixel (0,0,0) should convert to 0x0000."""
+        img = create_blank_image(1, 1, bg_color=(0, 0, 0))
+        result = image_to_bytes(img)
+        # RGB565 big-endian: black = 0x0000
+        assert result == b'\x00\x00'
+
+    def test_white_pixel_converts_correctly(self):
+        """White pixel (255,255,255) should convert to 0xFFFF."""
+        img = create_blank_image(1, 1, bg_color=(255, 255, 255))
+        result = image_to_bytes(img)
+        # RGB565 big-endian: white = 0xFFFF
+        assert result == b'\xff\xff'
+
+    def test_red_pixel_converts_correctly(self):
+        """Red pixel (255,0,0) should convert correctly."""
+        img = create_blank_image(1, 1, bg_color=(255, 0, 0))
+        result = image_to_bytes(img)
+        # RGB565: R=31 (5 bits), G=0 (6 bits), B=0 (5 bits)
+        # = 11111 000000 00000 = 0xF800 (big-endian)
+        assert result == b'\xf8\x00'

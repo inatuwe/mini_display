@@ -50,8 +50,11 @@ mini_display/
 - `create_hello_world_image()` - Create "Hello World!" image for display
 - Display dimensions: 160x80 pixels
 
+### Image to Bytes Conversion (Task 6) ✅
+- `image_to_bytes(image)` - Convert PIL image to RGB565 bytes for serial transmission
+
 ## Pending Features
-- Task 6: Image to Bytes Conversion
+- Task 7: Send Data to Display
 - Task 6: Image Sending
 - Task 7: Hello World Display
 

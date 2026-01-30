@@ -119,16 +119,16 @@ Small, autonomous tasks to implement the Display FS V1 interaction program.
 
 ---
 
-## Task 6: Image to Bytes Conversion
+## Task 6: Image to Bytes Conversion ✅
 **Goal:** Convert PIL image to bytes for serial transmission
 
 ### 6.1 Write test for image to RGB bytes conversion
-- [ ] Test: Function converts image to byte array
-- [ ] Test: Output size matches width × height × bytes_per_pixel
+- [x] Test: Function converts image to byte array
+- [x] Test: Output size matches width × height × bytes_per_pixel
 
 ### 6.2 Implement image to bytes conversion
-- [ ] Implement: `image_to_bytes(image)` function
-- [ ] Verify: Test passes
+- [x] Implement: `image_to_bytes(image)` function
+- [x] Verify: Test passes
 
 ---
 

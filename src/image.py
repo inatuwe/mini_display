@@ -73,3 +73,45 @@ def create_hello_world_image():
     """
     image = create_blank_image()
     return draw_text(image, "Hello World!")
+
+
+def image_to_bytes(image):
+    """
+    Convert a PIL image to RGB565 bytes for serial transmission.
+    
+    RGB565 format uses 2 bytes per pixel:
+    - 5 bits for Red (bits 15-11)
+    - 6 bits for Green (bits 10-5)
+    - 5 bits for Blue (bits 4-0)
+    
+    Args:
+        image: PIL Image object in RGB mode.
+        
+    Returns:
+        bytes: Image data in RGB565 format (big-endian).
+    """
+    # Ensure image is in RGB mode
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+    
+    pixels = image.load()
+    width, height = image.size
+    data = bytearray()
+    
+    for y in range(height):
+        for x in range(width):
+            r, g, b = pixels[x, y]
+            # Convert to RGB565
+            # R: 8 bits -> 5 bits (shift right by 3)
+            # G: 8 bits -> 6 bits (shift right by 2)
+            # B: 8 bits -> 5 bits (shift right by 3)
+            r5 = (r >> 3) & 0x1F
+            g6 = (g >> 2) & 0x3F
+            b5 = (b >> 3) & 0x1F
+            # Pack into 16-bit value: RRRRR GGGGGG BBBBB
+            rgb565 = (r5 << 11) | (g6 << 5) | b5
+            # Big-endian: high byte first
+            data.append((rgb565 >> 8) & 0xFF)
+            data.append(rgb565 & 0xFF)
+    
+    return bytes(data)
