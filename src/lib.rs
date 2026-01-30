@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 pub mod image;
 pub mod port;
 pub mod protocol;

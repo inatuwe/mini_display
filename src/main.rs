@@ -64,7 +64,10 @@ fn display_text(text: &str, font_size: f32) -> ExitCode {
 
     println!("✓ Found display on {}", port_info.name);
 
-    println!("Creating image with text: '{}' (font size: {})", text, font_size);
+    println!(
+        "Creating image with text: '{}' (font size: {})",
+        text, font_size
+    );
     let img = create_text_image(text, font_size);
     let image_data = image_to_rgb565_bytes(&img);
     println!("  Image size: {} bytes", image_data.len());

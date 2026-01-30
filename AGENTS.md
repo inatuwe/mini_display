@@ -52,27 +52,46 @@ Each plan file has a `Status:` field at the top to track progress.
 
 ## Commands
 
+### Quick Commands (using `just`)
+
+```bash
+# Install just (if not installed)
+brew install just  # or: cargo install just
+
+# Show available commands
+just
+
+# Development workflow
+just check         # Fast type-check (no codegen)
+just lint          # Run clippy lints
+just fmt           # Format code
+just test          # Run tests
+just ci            # Full check: fmt + lint + test
+
+# Build and run
+just build         # Build release binary
+just run "Hi"      # Run with custom text
+just detect        # Detect display
+```
+
+### Direct Cargo Commands
+
 ```bash
 # Install Rust (if not installed)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Build debug version
-cargo build
+# Build
+cargo build              # Debug build
+cargo build --release    # Release build
 
-# Build release version
-cargo build --release
-
-# Run tests
-cargo test
-
-# Run directly
+# Run
 cargo run -- "Hello World!"
 cargo run -- --detect
 
-# Run release binary
-./target/release/display-fs "Hello World!"
-./target/release/display-fs --detect
-./target/release/display-fs --help
+# Quality checks
+cargo fmt
+cargo clippy -- -D warnings
+cargo test
 ```
 
 ## Git Workflow

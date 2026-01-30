@@ -40,7 +40,7 @@ pub fn send_image_to_display(
     image_data: &[u8],
 ) -> Result<(), ProtocolError> {
     port.clear(serialport::ClearBuffer::All)
-        .map_err(|e| ProtocolError::SendFailed(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+        .map_err(|e| ProtocolError::SendFailed(std::io::Error::other(e)))?;
 
     let header = create_bitmap_header();
     port.write_all(&header)?;
@@ -77,13 +77,13 @@ mod tests {
         // x0 = 0 (little-endian: bytes 1-2)
         assert_eq!(header[1], 0x00); // x0 low
         assert_eq!(header[2], 0x00); // x0 high
-        // y0 = 0 (little-endian: bytes 3-4)
+                                     // y0 = 0 (little-endian: bytes 3-4)
         assert_eq!(header[3], 0x00); // y0 low
         assert_eq!(header[4], 0x00); // y0 high
-        // x1 = 159 (little-endian: bytes 5-6)
+                                     // x1 = 159 (little-endian: bytes 5-6)
         assert_eq!(header[5], 0x9F); // x1 low (159 = 0x9F)
         assert_eq!(header[6], 0x00); // x1 high
-        // y1 = 79 (little-endian: bytes 7-8)
+                                     // y1 = 79 (little-endian: bytes 7-8)
         assert_eq!(header[7], 0x4F); // y1 low (79 = 0x4F)
         assert_eq!(header[8], 0x00); // y1 high
     }
