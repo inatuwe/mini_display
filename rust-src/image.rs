@@ -30,22 +30,18 @@ fn draw_text(img: &mut RgbImage, text: &str, font_size: f32) {
 }
 
 fn measure_text(font: &FontRef, scale: PxScale, text: &str) -> (u32, u32) {
-    use ab_glyph::Font;
+    use ab_glyph::{Font, ScaleFont};
 
+    let scaled_font = font.as_scaled(scale);
     let mut width = 0.0f32;
-    let mut max_height = 0.0f32;
+    let height = scaled_font.height();
 
     for c in text.chars() {
         let glyph_id = font.glyph_id(c);
-        let advance = font.h_advance(glyph_id).clamp(0.0, 100.0);
-        width += advance * scale.x / font.units_per_em().unwrap_or(1000.0);
-
-        if let Some(bounds) = font.glyph_bounds(&glyph_id.with_scale(scale)) {
-            max_height = max_height.max(bounds.height());
-        }
+        width += scaled_font.h_advance(glyph_id);
     }
 
-    (width as u32, max_height as u32)
+    (width as u32, height as u32)
 }
 
 pub fn image_to_rgb565_bytes(img: &RgbImage) -> Vec<u8> {

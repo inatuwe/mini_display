@@ -81,12 +81,12 @@ Port from: `display.py`
 - [x] User-friendly error messages (no display found, connection failed)
 - [x] Exit code 0 on success, 1 on failure
 
-## Phase 6: Build & Test (TODO)
+## Phase 6: Build & Test (DONE)
 
-- [ ] Install Rust: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
-- [ ] `cargo build --release`
-- [ ] Test with actual display on macOS
-- [ ] Verify binary size is reasonable
+- [x] Install Rust: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+- [x] `cargo build --release` - Compiles successfully
+- [x] Test with actual display on macOS - Working!
+- [x] Verify binary size is reasonable - 1.5 MB
 - [ ] Update README.md with Rust usage instructions
 
 ---
