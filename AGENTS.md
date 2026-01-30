@@ -57,8 +57,11 @@ mini_display/
 - `send_bytes(connection, data)` - Send bytes to serial connection
 - `create_display_command(image_data)` - Wrap image data with display command protocol
 
+### Main Detection Script (Task 8) ✅
+- `detect_display.py` - Standalone script to detect and report display status
+
 ## Pending Features
-- Task 8: Main Detection Script
+- Task 9: Main Hello World Script
 - Task 6: Image Sending
 - Task 7: Hello World Display
 
