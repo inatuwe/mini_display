@@ -24,15 +24,21 @@ mini_display/
 │   │   └── python_implementation_completed.md
 │   └── plans/                   # Implementation plans (TODO/IN-PROGRESS/COMPLETED)
 │       └── 001_rust_migration.md
-├── src/                         # Python source (legacy, reference only)
+├── assets/
+│   └── fonts/                   # Font files for text rendering
+│       └── DejaVuSans.ttf
+├── src/                         # Python source modules
 │   ├── __init__.py
-│   └── com_ports.py
-├── tests/                       # Python tests (legacy, reference only)
+│   ├── com_ports.py             # COM port detection and connection
+│   ├── image.py                 # Image creation and conversion
+│   └── serial_comm.py           # Serial communication protocol
+├── tests/                       # Unit tests
 │   ├── __init__.py
-│   └── test_com_ports.py
-├── detect_display.py            # Python detection script (legacy)
-├── hello_world.py               # Python hello world script (legacy)
-└── requirements.txt             # Python dependencies (legacy)
+│   ├── test_com_ports.py
+│   └── test_image.py
+├── detect_display.py            # Detect connected display
+├── display.py                   # Main CLI - display text/images
+└── requirements.txt             # Python dependencies
 ```
 
 ## Plan Management
@@ -51,31 +57,7 @@ Each plan file has a `Status:` field at the top to track progress.
 
 - `001_rust_migration.md` - Migrate from Python to Rust (TODO)
 
-## Current Focus: Rust Migration
-
-### Goals
-
-1. Standalone executable - works without runtime dependencies
-2. No configuration required - auto-detect display
-3. CLI with options for custom text display
-
-### Rust Commands
-
-```bash
-# Build
-cargo build
-
-# Run
-cargo run
-
-# Test
-cargo test
-
-# Build release
-cargo build --release
-```
-
-## Legacy Python Commands
+## Python Commands
 
 ```bash
 # Install dependencies
@@ -88,7 +70,7 @@ python -m pytest tests/ -v
 python detect_display.py
 
 # Show Hello World
-python hello_world.py
+python display.py
 ```
 
 ## Git Workflow
@@ -107,3 +89,12 @@ git push
 
 - Write clear, descriptive commit messages
 - Reference plan numbers in commits (e.g., "Plan 001: Initialize Rust project")
+
+## Maintenance
+
+After making changes to the codebase, always:
+
+1. **Update AGENTS.md** - Keep project structure and commands current
+2. **Update README.md** - Reflect user-facing changes (new features, usage examples)
+3. **Update plan status** - Mark plans as COMPLETED when finished
+4. **Run tests** - Verify changes with `python -m pytest tests/ -v`

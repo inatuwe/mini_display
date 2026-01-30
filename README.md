@@ -50,7 +50,7 @@ python detect_display.py
 ### Display Hello World
 
 ```bash
-python hello_world.py
+python display.py
 ```
 
 ### Programmatic Usage
@@ -82,14 +82,16 @@ if is_display_fs_connected():
 
 ```
 mini_display/
-├── detect_display.py      # Script to detect connected display
-├── hello_world.py         # Main script to display "Hello World!"
+├── detect_display.py      # Detect connected display
+├── display.py             # Main CLI - display text/images
 ├── requirements.txt       # Python dependencies
+├── assets/
+│   └── fonts/             # Font files for text rendering
 ├── src/
-│   ├── com_ports.py       # COM port and serial connection functions
+│   ├── com_ports.py       # COM port detection and connection
 │   ├── image.py           # Image creation and conversion
 │   └── serial_comm.py     # Serial communication protocol
-└── tests/                 # Unit tests (61 tests)
+└── tests/                 # Unit tests
 ```
 
 ## Running Tests
