@@ -1,7 +1,8 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use display_fs::{
-    create_text_image, find_display_port, get_now_playing, image_to_rgb565_bytes,
-    is_display_connected, open_connection, send_image_to_display, split_into_pages,
+    calculate_auto_fit_size, create_text_image, find_display_port, get_now_playing,
+    image_to_rgb565_bytes, is_display_connected, open_connection, send_image_to_display,
+    split_into_pages,
 };
 use std::process::{Command, ExitCode};
 use std::thread;
@@ -44,6 +45,10 @@ struct DisplayOptions {
     /// Font size in pixels
     #[arg(short = 's', long, default_value = "14")]
     font_size: f32,
+
+    /// Auto-fit text to largest readable size
+    #[arg(short = 'a', long)]
+    auto: bool,
 
     /// Delay between pages/updates in seconds (must be positive)
     #[arg(short, long, default_value = "2.0", value_parser = validate_positive_f32)]
@@ -301,7 +306,8 @@ fn run_demo(display: DisplayOptions) -> ExitCode {
             let text = preset.run_command();
             println!("[{}] {}", desc, text);
 
-            let img = create_text_image(&text, display.font_size);
+            let font_size = get_effective_font_size(&text, &display);
+            let img = create_text_image(&text, font_size);
             let image_data = image_to_rgb565_bytes(&img);
 
             if let Err(e) = send_image_to_display(&mut connection, &image_data) {
@@ -359,7 +365,8 @@ fn run_spotify(args: SpotifyArgs) -> ExitCode {
         let should_update = current != last_track;
 
         if should_update {
-            let img = create_text_image(&text, args.display.font_size);
+            let font_size = get_effective_font_size(&text, &args.display);
+            let img = create_text_image(&text, font_size);
             let image_data = image_to_rgb565_bytes(&img);
 
             if let Err(e) = send_image_to_display(&mut connection, &image_data) {
@@ -406,8 +413,18 @@ fn detect_display() -> ExitCode {
     ExitCode::FAILURE
 }
 
+fn get_effective_font_size(text: &str, display: &DisplayOptions) -> f32 {
+    if display.auto {
+        let size = calculate_auto_fit_size(text);
+        println!("Auto-fit font size: {:.1}", size);
+        size
+    } else {
+        display.font_size
+    }
+}
+
 fn display_text(text: &str, display: &DisplayOptions) -> ExitCode {
-    let font_size = display.font_size;
+    let font_size = get_effective_font_size(text, display);
     let delay = display.effective_delay();
     let loop_mode = display.r#loop;
 

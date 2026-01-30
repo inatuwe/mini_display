@@ -1,6 +1,6 @@
 # Plan 003: Auto-Fit Text Display
 
-**Status:** TODO
+**Status:** COMPLETED
 
 ## Goal
 
@@ -22,7 +22,7 @@ Binary search to find the largest font size (8-80px) where text fits within disp
 
 ## Tasks
 
-- [ ] **Task 1: Add measure_multiline_text helper**
+- [x] **Task 1: Add measure_multiline_text helper**
   - Scope: `src/image.rs`
   - Depends on: none
   - Acceptance:
@@ -31,7 +31,7 @@ Binary search to find the largest font size (8-80px) where text fits within disp
     - Handles single-line text correctly
   - Notes: Reuse existing `measure_text()` for each line, use `scaled_font.height()` for line height
 
-- [ ] **Task 2: Add calculate_auto_fit_size function**
+- [x] **Task 2: Add calculate_auto_fit_size function**
   - Scope: `src/image.rs`
   - Depends on: Task 1
   - Acceptance:
@@ -41,14 +41,14 @@ Binary search to find the largest font size (8-80px) where text fits within disp
     - Returns MIN_SIZE for empty string
   - Notes: Binary search with 0.5 precision tolerance
 
-- [ ] **Task 3: Export calculate_auto_fit_size in lib.rs**
+- [x] **Task 3: Export calculate_auto_fit_size in lib.rs**
   - Scope: `src/lib.rs`
   - Depends on: Task 2
   - Acceptance:
     - `calculate_auto_fit_size` is exported from `lib.rs`
     - Compiles with `just check`
 
-- [ ] **Task 4: Add --auto flag to DisplayOptions**
+- [x] **Task 4: Add --auto flag to DisplayOptions**
   - Scope: `src/main.rs`
   - Depends on: Task 3
   - Acceptance:
@@ -57,7 +57,7 @@ Binary search to find the largest font size (8-80px) where text fits within disp
     - Help text says "Auto-fit text to largest readable size"
   - Notes: Add after `font_size` field
 
-- [ ] **Task 5: Integrate auto-fit in display_text function**
+- [x] **Task 5: Integrate auto-fit in display_text function**
   - Scope: `src/main.rs`
   - Depends on: Task 4
   - Acceptance:
@@ -66,7 +66,7 @@ Binary search to find the largest font size (8-80px) where text fits within disp
     - Console output shows computed font size (e.g., "Auto-fit font size: 32.0")
   - Notes: Import `calculate_auto_fit_size` from crate, apply before `split_into_pages`
 
-- [ ] **Task 6: Integrate auto-fit in other commands**
+- [x] **Task 6: Integrate auto-fit in other commands**
   - Scope: `src/main.rs`
   - Depends on: Task 5
   - Acceptance:
@@ -75,7 +75,7 @@ Binary search to find the largest font size (8-80px) where text fits within disp
     - `run_spotify()` respects `--auto` flag
   - Notes: Use helper function to get effective font size
 
-- [ ] **Task 7: Add tests for auto-fit**
+- [x] **Task 7: Add tests for auto-fit**
   - Scope: `src/image.rs`
   - Depends on: Task 2
   - Acceptance:
@@ -85,7 +85,7 @@ Binary search to find the largest font size (8-80px) where text fits within disp
     - Test: multi-line text returns smaller size than single line
     - All tests pass with `just test`
 
-- [ ] **Task 8: Update README with auto-fit feature**
+- [x] **Task 8: Update README with auto-fit feature**
   - Scope: `README.md`
   - Depends on: Task 6
   - Acceptance:

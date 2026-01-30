@@ -49,6 +49,63 @@ pub fn measure_text_with_font_size(text: &str, font_size: f32) -> (u32, u32) {
     measure_text(&font, scale, text)
 }
 
+/// Measure multi-line text dimensions at given font size.
+/// Returns (max_line_width, total_height) for the text.
+pub fn measure_multiline_text(text: &str, font_size: f32) -> (u32, u32) {
+    use ab_glyph::{Font, ScaleFont};
+
+    let font = FontRef::try_from_slice(FONT_DATA).expect("Failed to load embedded font");
+    let scale = PxScale::from(font_size);
+    let scaled_font = font.as_scaled(scale);
+    let line_height = scaled_font.height();
+
+    let lines: Vec<&str> = text.lines().collect();
+    if lines.is_empty() {
+        return (0, 0);
+    }
+
+    let max_width = lines
+        .iter()
+        .map(|line| measure_text(&font, scale, line).0)
+        .max()
+        .unwrap_or(0);
+
+    let total_height = (line_height * lines.len() as f32) as u32;
+
+    (max_width, total_height)
+}
+
+const MIN_FONT_SIZE: f32 = 8.0;
+const MAX_FONT_SIZE: f32 = 80.0;
+const PADDING: u32 = 4;
+const MAX_TEXT_WIDTH: u32 = DISPLAY_WIDTH - PADDING;
+const MAX_TEXT_HEIGHT: u32 = DISPLAY_HEIGHT - PADDING;
+
+/// Calculate the largest font size that fits text within display bounds.
+/// Uses binary search between MIN_FONT_SIZE (8.0) and MAX_FONT_SIZE (80.0).
+/// Returns font size where text fits in 156x76 pixels (4px padding).
+pub fn calculate_auto_fit_size(text: &str) -> f32 {
+    if text.is_empty() {
+        return MIN_FONT_SIZE;
+    }
+
+    let mut low = MIN_FONT_SIZE;
+    let mut high = MAX_FONT_SIZE;
+
+    while high - low > 0.5 {
+        let mid = (low + high) / 2.0;
+        let (width, height) = measure_multiline_text(text, mid);
+
+        if width <= MAX_TEXT_WIDTH && height <= MAX_TEXT_HEIGHT {
+            low = mid;
+        } else {
+            high = mid;
+        }
+    }
+
+    low
+}
+
 fn measure_text(font: &FontRef, scale: PxScale, text: &str) -> (u32, u32) {
     use ab_glyph::{Font, ScaleFont};
 
@@ -218,6 +275,48 @@ mod tests {
 
         let blank_bytes = image_to_rgb565_bytes(&blank);
         let text_bytes = image_to_rgb565_bytes(&text_img);
-        assert_ne!(blank_bytes, text_bytes, "Japanese text should render visible content");
+        assert_ne!(
+            blank_bytes, text_bytes,
+            "Japanese text should render visible content"
+        );
+    }
+
+    #[test]
+    fn test_auto_fit_single_char_large() {
+        let size = calculate_auto_fit_size("X");
+        assert!(
+            size > 40.0,
+            "Single char should fit at large size, got {}",
+            size
+        );
+    }
+
+    #[test]
+    fn test_auto_fit_long_text_smaller() {
+        let size = calculate_auto_fit_size("Hello World!");
+        assert!(
+            size < 30.0,
+            "Long text should have smaller size, got {}",
+            size
+        );
+    }
+
+    #[test]
+    fn test_auto_fit_empty_string_min() {
+        let size = calculate_auto_fit_size("");
+        assert_eq!(
+            size, MIN_FONT_SIZE,
+            "Empty string should return MIN_FONT_SIZE"
+        );
+    }
+
+    #[test]
+    fn test_auto_fit_multiline_smaller() {
+        let single_size = calculate_auto_fit_size("Hello");
+        let multi_size = calculate_auto_fit_size("Hello\nWorld");
+        assert!(
+            multi_size < single_size,
+            "Multi-line should be smaller than single line"
+        );
     }
 }

@@ -24,13 +24,16 @@ CLI tool to interact with the WeAct Studio Display FS V1 (0.96 inch IPS LCD).
 
 ```bash
 # Display text
-./display-fs "Hello World!"
+./display-fs show "Hello World!"
+
+# Auto-fit text to largest readable size
+./display-fs show --auto "Hi"
 
 # Check if display is connected
-./display-fs --detect
+./display-fs show --detect
 
 # Custom font size
-./display-fs -s 20 "Big Text"
+./display-fs show -s 20 "Big Text"
 ```
 
 ## Installation
@@ -85,31 +88,49 @@ Install CH340/CH341 USB-Serial drivers if not automatically detected:
 ## Usage
 
 ```text
-display-fs [OPTIONS] [TEXT]
+display-fs show [OPTIONS] [TEXT]
 
 Arguments:
   [TEXT]  Text to display [default: "Hello World!"]
 
 Options:
   -s, --font-size <SIZE>  Font size in pixels [default: 14]
-  -d, --detect            Only check if display is connected
+  -a, --auto              Auto-fit text to largest readable size
+  -d, --delay <SECONDS>   Delay between pages [default: 2.0]
+  -l, --loop              Loop display continuously
+      --detect            Only check if display is connected
   -h, --help              Print help
+```
+
+### Auto-Fit Mode
+
+The `--auto` flag automatically calculates the largest font size that fits your text on the 160x80 pixel display. Great for maximizing readability:
+
+```bash
+# Short text displays large
+./display-fs show --auto "Hi"        # Uses ~70px font
+
+# Longer text uses smaller font to fit
+./display-fs show --auto "Hello!"    # Uses ~40px font
 ```
 
 ### Examples
 
 ```bash
 # Default message
-./display-fs
+./display-fs show
 
 # Custom message
-./display-fs "Hello from Rust!"
+./display-fs show "Hello from Rust!"
 
-# Larger font
-./display-fs -s 24 "BIG"
+# Auto-fit (recommended)
+./display-fs show --auto "Status OK"
+
+# Larger font (manual)
+./display-fs show -s 24 "BIG"
 
 # Just detect display
-./display-fs --detect
+./display-fs show --detect
 ```
 
 ## Project Structure
