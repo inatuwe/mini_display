@@ -18,26 +18,33 @@ Standalone CLI application to interact with the Display FS V1 (0.96 inch), detec
 ```text
 mini_display/
 ├── AGENTS.md                    # This file - project instructions
+├── Cargo.toml                   # Rust project configuration
 ├── .agents/
 │   ├── research/                # Research and reference material
 │   │   ├── display_fs_v1_research.md
 │   │   └── python_implementation_completed.md
 │   └── plans/                   # Implementation plans (TODO/IN-PROGRESS/COMPLETED)
 │       └── 001_rust_migration.md
+├── rust-src/                    # Rust source modules
+│   ├── main.rs                  # CLI entry point
+│   ├── lib.rs                   # Library exports
+│   ├── port.rs                  # COM port detection and connection
+│   ├── image.rs                 # Image creation and RGB565 conversion
+│   └── protocol.rs              # Display command protocol
 ├── assets/
 │   └── fonts/                   # Font files for text rendering
-│       └── DejaVuSans.ttf
-├── src/                         # Python source modules
+│       └── DejaVuSans.ttf       # Embedded in Rust binary
+├── src/                         # Python source modules (reference)
 │   ├── __init__.py
-│   ├── com_ports.py             # COM port detection and connection
-│   ├── image.py                 # Image creation and conversion
-│   └── serial_comm.py           # Serial communication protocol
-├── tests/                       # Unit tests
+│   ├── com_ports.py
+│   ├── image.py
+│   └── serial_comm.py
+├── tests/                       # Python unit tests
 │   ├── __init__.py
 │   ├── test_com_ports.py
 │   └── test_image.py
-├── detect_display.py            # Detect connected display
-├── display.py                   # Main CLI - display text/images
+├── detect_display.py            # Python: Detect connected display
+├── display.py                   # Python: Main CLI
 └── requirements.txt             # Python dependencies
 ```
 
@@ -55,7 +62,29 @@ Each plan file has a `Status:` field at the top to track progress.
 
 ### Current Plans
 
-- `001_rust_migration.md` - Migrate from Python to Rust (TODO)
+- `001_rust_migration.md` - Migrate from Python to Rust (IN-PROGRESS)
+
+## Rust Commands
+
+```bash
+# Install Rust (if not installed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Build debug version
+cargo build
+
+# Build release version
+cargo build --release
+
+# Run directly
+cargo run -- "Hello World!"
+cargo run -- --detect
+
+# Run release binary
+./target/release/display-fs "Hello World!"
+./target/release/display-fs --detect
+./target/release/display-fs --help
+```
 
 ## Python Commands
 
@@ -89,6 +118,7 @@ git push
 
 - Write clear, descriptive commit messages
 - Reference plan numbers in commits (e.g., "Plan 001: Initialize Rust project")
+- **Commit after each logical step** - Don't wait until everything is done; commit when a phase or meaningful unit of work is complete
 
 ## Maintenance
 

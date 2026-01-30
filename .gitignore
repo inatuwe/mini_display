@@ -83,3 +83,7 @@ dmypy.json
 # OS files
 .DS_Store
 Thumbs.db
+
+# Rust
+target/
+Cargo.lock
