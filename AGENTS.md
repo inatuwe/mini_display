@@ -1,128 +1,109 @@
-# Project: Display FS V1 (0.96 inch) Python Interaction
+# Project: Display FS V1 (0.96 inch)
 
 ## Overview
-Python program to interact with the Display FS V1 (0.96 inch), detect if it's connected, and display content.
+
+Standalone CLI application to interact with the Display FS V1 (0.96 inch), detect if it's connected, and display content.
 
 ## Hardware
+
 - **Device:** WeAct Studio Display FS V1 (0.96 inch IPS LCD)
 - **Connection:** USB-C (appears as serial/COM port)
 - **Resolution:** 160x80 pixels
 - **Communication:** USB Serial (UART) at 115200 baud
 - **USB Chip:** CH340/CH341 USB-Serial converter
+- **Known VID/PID:** CH340 (1A86:7523), CH341 (1A86:5523)
 
 ## Project Structure
+
 ```
 mini_display/
-├── agents.md              # This file - project information
-├── PLAN_display_fs_v1.md  # Research and implementation plan
-├── TASKS_display_fs_v1.md # Task breakdown with TDD approach
-├── requirements.txt       # Python dependencies
-├── src/
+├── AGENTS.md                    # This file - project instructions
+├── .agents/
+│   ├── research/                # Research and reference material
+│   │   ├── display_fs_v1_research.md
+│   │   └── python_implementation_completed.md
+│   └── plans/                   # Implementation plans (TODO/IN-PROGRESS/COMPLETED)
+│       └── 001_rust_migration.md
+├── src/                         # Python source (legacy, reference only)
 │   ├── __init__.py
-│   └── com_ports.py       # COM port and serial connection functions
-└── tests/
-    ├── __init__.py
-    └── test_com_ports.py  # Unit tests
+│   └── com_ports.py
+├── tests/                       # Python tests (legacy, reference only)
+│   ├── __init__.py
+│   └── test_com_ports.py
+├── detect_display.py            # Python detection script (legacy)
+├── hello_world.py               # Python hello world script (legacy)
+└── requirements.txt             # Python dependencies (legacy)
 ```
 
-## Dependencies
-- `pyserial>=3.5` - Serial port communication
-- `pillow>=9.0.0` - Image creation for display
+## Plan Management
 
-## Implemented Features
+Plans in `.agents/plans/` follow this workflow:
 
-### COM Port Enumeration (Task 2) ✅
-- `list_com_ports()` - List all available COM ports
-- `format_port_info(port)` - Format port info as readable string
+| Status | Description |
+|--------|-------------|
+| **TODO** | Planned but not started |
+| **IN-PROGRESS** | Currently being worked on |
+| **COMPLETED** | Finished and verified |
 
-### Display Detection (Task 3) ✅
-- `is_display_fs_connected(ports=None)` - Check if Display FS V1 is connected by VID/PID
-- `find_display_port(ports=None)` - Find and return the display port object
-- Known VID/PID: CH340 (1A86:7523), CH341 (1A86:5523)
+Each plan file has a `Status:` field at the top to track progress.
 
-### Serial Connection (Task 4) ✅
-- `open_connection(port, baud_rate=115200, timeout=1.0)` - Open serial connection
-- `close_connection(connection)` - Close serial connection safely
+### Current Plans
 
-### Image Creation (Task 5) ✅
-- `create_blank_image(width, height, bg_color)` - Create blank RGB image
-- `draw_text(image, text, position, font_size, color)` - Draw text on image
-- `create_hello_world_image()` - Create "Hello World!" image for display
-- Display dimensions: 160x80 pixels
+- `001_rust_migration.md` - Migrate from Python to Rust (TODO)
 
-### Image to Bytes Conversion (Task 6) ✅
-- `image_to_bytes(image)` - Convert PIL image to RGB565 bytes for serial transmission
+## Current Focus: Rust Migration
 
-### Send Data to Display (Task 7) ✅
-- `send_bytes(connection, data)` - Send bytes to serial connection
-- `create_display_command(image_data)` - Wrap image data with display command protocol
+### Goals
 
-### Main Detection Script (Task 8) ✅
-- `detect_display.py` - Standalone script to detect and report display status
+1. Standalone executable - works without runtime dependencies
+2. No configuration required - auto-detect display
+3. CLI with options for custom text display
 
-### Main Hello World Script (Task 9) ✅
-- `hello_world.py` - Main script that displays "Hello World!" on the display
+### Rust Commands
 
-### Error Handling & Polish (Task 10) ✅
-- Graceful handling of disconnected display
-- Graceful handling of permission errors
-- Helpful error messages for users
-- Robust connection closing
-
-## Project Complete ✅
-All tasks have been implemented and tested (61 tests passing).
-
-## Running Tests
 ```bash
-python -m pytest tests/ -v
+# Build
+cargo build
+
+# Run
+cargo run
+
+# Test
+cargo test
+
+# Build release
+cargo build --release
 ```
 
-## Usage Example
-```python
-from src.com_ports import (
-    find_display_port,
-    open_connection,
-    close_connection,
-    is_display_fs_connected
-)
+## Legacy Python Commands
 
-# Check if display is connected
-if is_display_fs_connected():
-    port = find_display_port()
-    print(f"Display found on {port.device}")
-    
-    # Open connection
-    conn = open_connection(port)
-    
-    # ... send data ...
-    
-    # Close connection
-    close_connection(conn)
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run tests
+python -m pytest tests/ -v
+
+# Detect display
+python detect_display.py
+
+# Show Hello World
+python hello_world.py
 ```
 
 ## Git Workflow
-Use plain git commands for version control. Do not use GitKraken or other GUI tools.
 
-### Common Commands
+Use plain git commands for version control.
+
 ```bash
-# Check status
 git status
-
-# Stage all changes
 git add -A
-
-# Commit with message
 git commit -m "Description of changes"
-
-# View commit history
 git log --oneline
-
-# Push to remote
 git push
 ```
 
 ### Commit Guidelines
-- Write clear, descriptive commit messages
-- Commit after completing each task
-- Reference task numbers in commit messages (e.g., "Task 4: Implement serial connection")
 
+- Write clear, descriptive commit messages
+- Reference plan numbers in commits (e.g., "Plan 001: Initialize Rust project")
