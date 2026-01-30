@@ -29,6 +29,12 @@ fn draw_text(img: &mut RgbImage, text: &str, font_size: f32) {
     draw_text_mut(img, Rgb([255, 255, 255]), x, y, scale, &font, text);
 }
 
+pub fn measure_text_with_font_size(text: &str, font_size: f32) -> (u32, u32) {
+    let font = FontRef::try_from_slice(FONT_DATA).expect("Failed to load embedded font");
+    let scale = PxScale::from(font_size);
+    measure_text(&font, scale, text)
+}
+
 fn measure_text(font: &FontRef, scale: PxScale, text: &str) -> (u32, u32) {
     use ab_glyph::{Font, ScaleFont};
 
@@ -42,6 +48,39 @@ fn measure_text(font: &FontRef, scale: PxScale, text: &str) -> (u32, u32) {
     }
 
     (width as u32, height as u32)
+}
+
+pub fn calculate_max_chars_per_line(font_size: f32) -> usize {
+    let font = FontRef::try_from_slice(FONT_DATA).expect("Failed to load embedded font");
+    let scale = PxScale::from(font_size);
+
+    use ab_glyph::{Font, ScaleFont};
+    let scaled_font = font.as_scaled(scale);
+
+    // Use average character width based on 'x' (common reference character)
+    let avg_width = scaled_font.h_advance(font.glyph_id('x'));
+
+    if avg_width > 0.0 {
+        (DISPLAY_WIDTH as f32 / avg_width).floor() as usize
+    } else {
+        0
+    }
+}
+
+pub fn calculate_max_lines(font_size: f32) -> usize {
+    let font = FontRef::try_from_slice(FONT_DATA).expect("Failed to load embedded font");
+    let scale = PxScale::from(font_size);
+
+    use ab_glyph::{Font, ScaleFont};
+    let scaled_font = font.as_scaled(scale);
+
+    let line_height = scaled_font.height();
+
+    if line_height > 0.0 {
+        (DISPLAY_HEIGHT as f32 / line_height).floor() as usize
+    } else {
+        0
+    }
 }
 
 pub fn image_to_rgb565_bytes(img: &RgbImage) -> Vec<u8> {

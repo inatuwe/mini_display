@@ -1,6 +1,6 @@
 # Plan 004: Multi-Page Text Display with Paging
 
-**Status:** TODO  
+**Status:** IN-PROGRESS  
 **Priority:** High  
 **Depends on:** 003 (configurable font size)
 
@@ -10,7 +10,7 @@ Extend the CLI to handle long text that doesn't fit on the 160x80 display, autom
 
 ## Tasks
 
-- [ ] **Task 1: Expose text measurement utilities**
+- [x] **Task 1: Expose text measurement utilities**
   - Scope: `src/image.rs`, `src/lib.rs`
   - Depends on: none
   - Acceptance:
