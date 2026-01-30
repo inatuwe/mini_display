@@ -5,11 +5,11 @@ edition = "2021"
 description = "CLI tool for WeAct Studio Display FS V1 (0.96 inch)"
 
 [lib]
-path = "rust-src/lib.rs"
+path = "src/lib.rs"
 
 [[bin]]
 name = "display-fs"
-path = "rust-src/main.rs"
+path = "src/main.rs"
 
 [dependencies]
 serialport = "4.7"

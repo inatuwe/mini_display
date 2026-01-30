@@ -55,3 +55,48 @@ pub fn send_image_to_display(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_bitmap_header_structure() {
+        let header = create_bitmap_header();
+        // Header should be 10 bytes
+        assert_eq!(header.len(), 10);
+        // First byte is CMD_SET_BITMAP (0x05)
+        assert_eq!(header[0], CMD_SET_BITMAP);
+        // Last byte is CMD_END (0x0A)
+        assert_eq!(header[9], CMD_END);
+    }
+
+    #[test]
+    fn test_bitmap_header_coordinates() {
+        let header = create_bitmap_header();
+        // x0 = 0 (little-endian: bytes 1-2)
+        assert_eq!(header[1], 0x00); // x0 low
+        assert_eq!(header[2], 0x00); // x0 high
+        // y0 = 0 (little-endian: bytes 3-4)
+        assert_eq!(header[3], 0x00); // y0 low
+        assert_eq!(header[4], 0x00); // y0 high
+        // x1 = 159 (little-endian: bytes 5-6)
+        assert_eq!(header[5], 0x9F); // x1 low (159 = 0x9F)
+        assert_eq!(header[6], 0x00); // x1 high
+        // y1 = 79 (little-endian: bytes 7-8)
+        assert_eq!(header[7], 0x4F); // y1 low (79 = 0x4F)
+        assert_eq!(header[8], 0x00); // y1 high
+    }
+
+    #[test]
+    fn test_command_constants() {
+        assert_eq!(CMD_SET_BITMAP, 0x05);
+        assert_eq!(CMD_END, 0x0A);
+    }
+
+    #[test]
+    fn test_chunk_size() {
+        // CHUNK_SIZE = DISPLAY_WIDTH * 4 = 160 * 4 = 640
+        assert_eq!(CHUNK_SIZE, 640);
+    }
+}

@@ -96,15 +96,14 @@ Options:
 ```
 mini_display/
 ├── Cargo.toml             # Rust project configuration
-├── rust-src/              # Rust source code
+├── src/                   # Rust source code
 │   ├── main.rs            # CLI entry point
 │   ├── lib.rs             # Library exports
 │   ├── port.rs            # USB port detection
 │   ├── image.rs           # Image creation & RGB565
 │   └── protocol.rs        # Display protocol
-├── assets/
-│   └── fonts/             # Font files (embedded in binary)
-└── src/                   # Python reference implementation
+└── assets/
+    └── fonts/             # Font files (embedded in binary)
 ```
 
 ## License

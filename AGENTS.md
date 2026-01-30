@@ -24,28 +24,17 @@ mini_display/
 │   │   ├── display_fs_v1_research.md
 │   │   └── python_implementation_completed.md
 │   └── plans/                   # Implementation plans (TODO/IN-PROGRESS/COMPLETED)
-│       └── 001_rust_migration.md
-├── rust-src/                    # Rust source modules
+│       ├── 001_rust_migration.md
+│       └── 002_rust_cleanup.md
+├── src/                         # Rust source modules
 │   ├── main.rs                  # CLI entry point
 │   ├── lib.rs                   # Library exports
 │   ├── port.rs                  # COM port detection and connection
 │   ├── image.rs                 # Image creation and RGB565 conversion
 │   └── protocol.rs              # Display command protocol
-├── assets/
-│   └── fonts/                   # Font files for text rendering
-│       └── DejaVuSans.ttf       # Embedded in Rust binary
-├── src/                         # Python source modules (reference)
-│   ├── __init__.py
-│   ├── com_ports.py
-│   ├── image.py
-│   └── serial_comm.py
-├── tests/                       # Python unit tests
-│   ├── __init__.py
-│   ├── test_com_ports.py
-│   └── test_image.py
-├── detect_display.py            # Python: Detect connected display
-├── display.py                   # Python: Main CLI
-└── requirements.txt             # Python dependencies
+└── assets/
+    └── fonts/                   # Font files for text rendering
+        └── DejaVuSans.ttf       # Embedded in Rust binary
 ```
 
 ## Plan Management
@@ -63,8 +52,9 @@ Each plan file has a `Status:` field at the top to track progress.
 ### Current Plans
 
 - `001_rust_migration.md` - Migrate from Python to Rust (COMPLETED)
+- `002_rust_cleanup.md` - Remove Python, migrate tests to Rust (COMPLETED)
 
-## Rust Commands
+## Commands
 
 ```bash
 # Install Rust (if not installed)
@@ -76,6 +66,9 @@ cargo build
 # Build release version
 cargo build --release
 
+# Run tests
+cargo test
+
 # Run directly
 cargo run -- "Hello World!"
 cargo run -- --detect
@@ -84,22 +77,6 @@ cargo run -- --detect
 ./target/release/display-fs "Hello World!"
 ./target/release/display-fs --detect
 ./target/release/display-fs --help
-```
-
-## Python Commands
-
-```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Run tests
-python -m pytest tests/ -v
-
-# Detect display
-python detect_display.py
-
-# Show Hello World
-python display.py
 ```
 
 ## Git Workflow
@@ -127,4 +104,4 @@ After making changes to the codebase, always:
 1. **Update AGENTS.md** - Keep project structure and commands current
 2. **Update README.md** - Reflect user-facing changes (new features, usage examples)
 3. **Update plan status** - Mark plans as COMPLETED when finished
-4. **Run tests** - Verify changes with `python -m pytest tests/ -v`
+4. **Run tests** - Verify changes with `cargo test`
