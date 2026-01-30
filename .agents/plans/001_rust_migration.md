@@ -1,6 +1,6 @@
 # Plan 001: Migrate to Rust
 
-**Status:** IN-PROGRESS  
+**Status:** COMPLETED  
 **Priority:** High  
 **Created:** January 30, 2026
 
@@ -87,7 +87,7 @@ Port from: `display.py`
 - [x] `cargo build --release` - Compiles successfully
 - [x] Test with actual display on macOS - Working!
 - [x] Verify binary size is reasonable - 1.5 MB
-- [ ] Update README.md with Rust usage instructions
+- [x] Update README.md with Rust usage instructions
 
 ---
 

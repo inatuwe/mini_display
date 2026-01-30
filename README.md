@@ -1,11 +1,12 @@
 # Mini Display
 
-Python library to interact with the WeAct Studio Display FS V1 (0.96 inch IPS LCD).
+CLI tool to interact with the WeAct Studio Display FS V1 (0.96 inch IPS LCD).
 
 ## Features
 
+- **Standalone executable** - No runtime dependencies, just download and run
 - Auto-detect display via USB (CH340/CH341 USB-Serial)
-- Display text and images on the 160x80 pixel screen
+- Display text on the 160x80 pixel screen
 - Cross-platform support (Windows, Linux, macOS)
 
 ## Hardware
@@ -19,85 +20,91 @@ Python library to interact with the WeAct Studio Display FS V1 (0.96 inch IPS LC
 | Baud Rate | 115200 |
 | USB Chip | CH340/CH341 |
 
-## Installation
+## Quick Start
 
 ```bash
-pip install -r requirements.txt
+# Display text
+./display-fs "Hello World!"
+
+# Check if display is connected
+./display-fs --detect
+
+# Custom font size
+./display-fs -s 20 "Big Text"
 ```
 
-### Requirements
+## Installation
 
-- Python 3.9+
-- `pyserial>=3.5`
-- `pillow>=9.0.0`
+### Option 1: Download Binary (Recommended)
+
+Download the latest release for your platform from [Releases](https://github.com/inatuwe/mini_display/releases).
+
+### Option 2: Build from Source
+
+Requires [Rust](https://rustup.rs/):
+
+```bash
+# Install Rust (if not installed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Build release binary
+cargo build --release
+
+# Binary is at: ./target/release/display-fs
+```
 
 ### Driver
 
 Install CH340/CH341 USB-Serial drivers if not automatically detected:
 
-- Windows: Usually auto-installed
-- macOS: [CH340 Driver](https://github.com/adrianmihalko/ch340g-ch34g-ch34x-mac-os-x-driver)
-- Linux: Usually built into the kernel
+- **Windows:** Usually auto-installed
+- **macOS:** [CH340 Driver](https://github.com/adrianmihalko/ch340g-ch34g-ch34x-mac-os-x-driver)
+- **Linux:** Usually built into the kernel
 
 ## Usage
 
-### Detect Display
+```
+display-fs [OPTIONS] [TEXT]
 
-```bash
-python detect_display.py
+Arguments:
+  [TEXT]  Text to display [default: "Hello World!"]
+
+Options:
+  -s, --font-size <SIZE>  Font size in pixels [default: 14]
+  -d, --detect            Only check if display is connected
+  -h, --help              Print help
 ```
 
-### Display Hello World
+### Examples
 
 ```bash
-python display.py
-```
+# Default message
+./display-fs
 
-### Programmatic Usage
+# Custom message
+./display-fs "Hello from Rust!"
 
-```python
-from src.com_ports import (
-    find_display_port,
-    open_connection,
-    close_connection,
-    is_display_fs_connected
-)
-from src.image import create_hello_world_image, image_to_bytes
-from src.serial_comm import send_image_to_display
+# Larger font
+./display-fs -s 24 "BIG"
 
-# Check if display is connected
-if is_display_fs_connected():
-    port = find_display_port()
-    conn = open_connection(port)
-    
-    # Create and send image
-    image = create_hello_world_image()
-    image_data = image_to_bytes(image)
-    send_image_to_display(conn, image_data)
-    
-    close_connection(conn)
+# Just detect display
+./display-fs --detect
 ```
 
 ## Project Structure
 
 ```
 mini_display/
-├── detect_display.py      # Detect connected display
-├── display.py             # Main CLI - display text/images
-├── requirements.txt       # Python dependencies
+├── Cargo.toml             # Rust project configuration
+├── rust-src/              # Rust source code
+│   ├── main.rs            # CLI entry point
+│   ├── lib.rs             # Library exports
+│   ├── port.rs            # USB port detection
+│   ├── image.rs           # Image creation & RGB565
+│   └── protocol.rs        # Display protocol
 ├── assets/
-│   └── fonts/             # Font files for text rendering
-├── src/
-│   ├── com_ports.py       # COM port detection and connection
-│   ├── image.py           # Image creation and conversion
-│   └── serial_comm.py     # Serial communication protocol
-└── tests/                 # Unit tests
-```
-
-## Running Tests
-
-```bash
-python -m pytest tests/ -v
+│   └── fonts/             # Font files (embedded in binary)
+└── src/                   # Python reference implementation
 ```
 
 ## License
