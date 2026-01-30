@@ -8,7 +8,7 @@ Standalone CLI application to interact with the Display FS V1 (0.96 inch), detec
 
 - **Device:** WeAct Studio Display FS V1 (0.96 inch IPS LCD)
 - **Connection:** USB-C (appears as serial/COM port)
-- **Resolution:** 160x80 pixels
+- **Resolution:** 80x160 pixels (portrait orientation)
 - **Communication:** USB Serial (UART) at 115200 baud
 - **USB Chip:** CH340/CH341 USB-Serial converter
 - **Known VID/PID:** CH340 (1A86:7523), CH341 (1A86:5523)

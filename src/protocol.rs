@@ -80,11 +80,10 @@ mod tests {
                                      // y0 = 0 (little-endian: bytes 3-4)
         assert_eq!(header[3], 0x00); // y0 low
         assert_eq!(header[4], 0x00); // y0 high
-                                     // x1 = 159 (little-endian: bytes 5-6)
-        assert_eq!(header[5], 0x9F); // x1 low (159 = 0x9F)
+                                     // Portrait: x1 = 79, y1 = 159
+        assert_eq!(header[5], 0x4F); // x1 low (79 = 0x4F)
         assert_eq!(header[6], 0x00); // x1 high
-                                     // y1 = 79 (little-endian: bytes 7-8)
-        assert_eq!(header[7], 0x4F); // y1 low (79 = 0x4F)
+        assert_eq!(header[7], 0x9F); // y1 low (159 = 0x9F)
         assert_eq!(header[8], 0x00); // y1 high
     }
 
@@ -96,7 +95,7 @@ mod tests {
 
     #[test]
     fn test_chunk_size() {
-        // CHUNK_SIZE = DISPLAY_WIDTH * 4 = 160 * 4 = 640
-        assert_eq!(CHUNK_SIZE, 640);
+        // CHUNK_SIZE = DISPLAY_WIDTH * 4 = 80 * 4 = 320 (portrait mode)
+        assert_eq!(CHUNK_SIZE, 320);
     }
 }

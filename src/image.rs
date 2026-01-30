@@ -2,8 +2,9 @@ use ab_glyph::{FontRef, PxScale};
 use image::{Rgb, RgbImage};
 use imageproc::drawing::draw_text_mut;
 
-pub const DISPLAY_WIDTH: u32 = 160;
-pub const DISPLAY_HEIGHT: u32 = 80;
+// Display is in portrait orientation: 80 wide × 160 tall
+pub const DISPLAY_WIDTH: u32 = 80;
+pub const DISPLAY_HEIGHT: u32 = 160;
 
 #[cfg(feature = "japanese")]
 const FONT_DATA: &[u8] = include_bytes!("../assets/fonts/NotoSansJP-Regular.otf");
@@ -76,10 +77,11 @@ pub fn measure_multiline_text(text: &str, font_size: f32) -> (u32, u32) {
 }
 
 const MIN_FONT_SIZE: f32 = 8.0;
-const MAX_FONT_SIZE: f32 = 80.0;
-const PADDING: u32 = 4;
-const MAX_TEXT_WIDTH: u32 = DISPLAY_WIDTH - PADDING;
-const MAX_TEXT_HEIGHT: u32 = DISPLAY_HEIGHT - PADDING;
+const MAX_FONT_SIZE: f32 = 72.0;
+const HORIZONTAL_PADDING: u32 = 8;
+const VERTICAL_PADDING: u32 = 4;
+const MAX_TEXT_WIDTH: u32 = DISPLAY_WIDTH - HORIZONTAL_PADDING;
+const MAX_TEXT_HEIGHT: u32 = DISPLAY_HEIGHT - VERTICAL_PADDING;
 
 /// Calculate the largest font size that fits text within display bounds.
 /// Uses binary search between MIN_FONT_SIZE (8.0) and MAX_FONT_SIZE (80.0).
@@ -263,8 +265,9 @@ mod tests {
 
     #[test]
     fn test_display_dimensions() {
-        assert_eq!(DISPLAY_WIDTH, 160);
-        assert_eq!(DISPLAY_HEIGHT, 80);
+        // Portrait orientation: 80 wide × 160 tall
+        assert_eq!(DISPLAY_WIDTH, 80);
+        assert_eq!(DISPLAY_HEIGHT, 160);
     }
 
     #[cfg(feature = "japanese")]
@@ -317,6 +320,33 @@ mod tests {
         assert!(
             multi_size < single_size,
             "Multi-line should be smaller than single line"
+        );
+    }
+
+    #[test]
+    fn test_measure_dimensions() {
+        for font_size in [20.0, 40.0, 60.0, 70.0] {
+            let (w, h) = measure_multiline_text("Hello", font_size);
+            eprintln!(
+                "Hello at {}px: {}w x {}h (max: {}x{})",
+                font_size, w, h, MAX_TEXT_WIDTH, MAX_TEXT_HEIGHT
+            );
+        }
+        let size = calculate_auto_fit_size("Hello");
+        let (w, h) = measure_multiline_text("Hello", size);
+        eprintln!("Auto-fit 'Hello': size={}, dims={}x{}", size, w, h);
+
+        assert!(
+            w <= MAX_TEXT_WIDTH,
+            "Width {} exceeds max {}",
+            w,
+            MAX_TEXT_WIDTH
+        );
+        assert!(
+            h <= MAX_TEXT_HEIGHT,
+            "Height {} exceeds max {}",
+            h,
+            MAX_TEXT_HEIGHT
         );
     }
 }

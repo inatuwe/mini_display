@@ -15,7 +15,7 @@ CLI tool to interact with the WeAct Studio Display FS V1 (0.96 inch IPS LCD).
 |---------------|------------------------------|
 | Device        | WeAct Studio Display FS V1  |
 | Screen Size   | 0.96 inch IPS LCD           |
-| Resolution    | 160x80 pixels               |
+| Resolution    | 80x160 pixels (portrait)    |
 | Connection    | USB-C (serial)              |
 | Baud Rate     | 115200                      |
 | USB Chip      | CH340/CH341                 |
@@ -104,7 +104,7 @@ Options:
 
 ### Auto-Fit Mode
 
-The `--auto` flag automatically calculates the largest font size that fits your text on the 160x80 pixel display. Great for maximizing readability:
+The `--auto` flag automatically calculates the largest font size that fits your text on the 80x160 pixel display. Great for maximizing readability:
 
 ```bash
 # Short text displays large
