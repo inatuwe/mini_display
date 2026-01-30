@@ -2,9 +2,41 @@ use ab_glyph::{FontRef, PxScale};
 use image::{Rgb, RgbImage};
 use imageproc::drawing::draw_text_mut;
 
-// Display is in portrait orientation: 80 wide × 160 tall
-pub const DISPLAY_WIDTH: u32 = 80;
-pub const DISPLAY_HEIGHT: u32 = 160;
+/// Physical display dimensions (hardware)
+const PHYSICAL_WIDTH: u32 = 160;
+const PHYSICAL_HEIGHT: u32 = 80;
+
+/// Display orientation
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum Orientation {
+    /// 160x80 - wider than tall (default)
+    #[default]
+    Landscape,
+    /// 80x160 - taller than wide
+    Portrait,
+}
+
+impl Orientation {
+    /// Get display width for this orientation
+    pub fn width(self) -> u32 {
+        match self {
+            Orientation::Landscape => PHYSICAL_WIDTH,
+            Orientation::Portrait => PHYSICAL_HEIGHT,
+        }
+    }
+
+    /// Get display height for this orientation
+    pub fn height(self) -> u32 {
+        match self {
+            Orientation::Landscape => PHYSICAL_HEIGHT,
+            Orientation::Portrait => PHYSICAL_WIDTH,
+        }
+    }
+}
+
+// Legacy constants for backward compatibility (default to landscape)
+pub const DISPLAY_WIDTH: u32 = PHYSICAL_WIDTH;
+pub const DISPLAY_HEIGHT: u32 = PHYSICAL_HEIGHT;
 
 #[cfg(feature = "japanese")]
 const FONT_DATA: &[u8] = include_bytes!("../assets/fonts/NotoSansJP-Regular.otf");
@@ -16,13 +48,27 @@ pub fn create_blank_image() -> RgbImage {
     RgbImage::from_pixel(DISPLAY_WIDTH, DISPLAY_HEIGHT, Rgb([0, 0, 0]))
 }
 
+/// Create a blank image with specified orientation
+pub fn create_blank_image_oriented(orientation: Orientation) -> RgbImage {
+    RgbImage::from_pixel(orientation.width(), orientation.height(), Rgb([0, 0, 0]))
+}
+
 pub fn create_text_image(text: &str, font_size: f32) -> RgbImage {
-    let mut img = create_blank_image();
-    draw_text(&mut img, text, font_size);
+    create_text_image_oriented(text, font_size, Orientation::default())
+}
+
+/// Create text image with specified orientation
+pub fn create_text_image_oriented(
+    text: &str,
+    font_size: f32,
+    orientation: Orientation,
+) -> RgbImage {
+    let mut img = create_blank_image_oriented(orientation);
+    draw_text_oriented(&mut img, text, font_size, orientation);
     img
 }
 
-fn draw_text(img: &mut RgbImage, text: &str, font_size: f32) {
+fn draw_text_oriented(img: &mut RgbImage, text: &str, font_size: f32, orientation: Orientation) {
     use ab_glyph::{Font, ScaleFont};
 
     let font = FontRef::try_from_slice(FONT_DATA).expect("Failed to load embedded font");
@@ -33,11 +79,14 @@ fn draw_text(img: &mut RgbImage, text: &str, font_size: f32) {
     let lines: Vec<&str> = text.lines().collect();
     let total_height = line_height * lines.len() as f32;
 
-    let start_y = ((DISPLAY_HEIGHT as f32 - total_height) / 2.0).max(0.0) as i32;
+    let display_width = orientation.width();
+    let display_height = orientation.height();
+
+    let start_y = ((display_height as f32 - total_height) / 2.0).max(0.0) as i32;
 
     for (i, line) in lines.iter().enumerate() {
         let (line_width, _) = measure_text(&font, scale, line);
-        let x = ((DISPLAY_WIDTH as i32 - line_width as i32) / 2).max(0);
+        let x = ((display_width as i32 - line_width as i32) / 2).max(0);
         let y = start_y + (i as f32 * line_height) as i32;
 
         draw_text_mut(img, Rgb([255, 255, 255]), x, y, scale, &font, line);
@@ -80,16 +129,21 @@ const MIN_FONT_SIZE: f32 = 8.0;
 const MAX_FONT_SIZE: f32 = 72.0;
 const HORIZONTAL_PADDING: u32 = 8;
 const VERTICAL_PADDING: u32 = 4;
-const MAX_TEXT_WIDTH: u32 = DISPLAY_WIDTH - HORIZONTAL_PADDING;
-const MAX_TEXT_HEIGHT: u32 = DISPLAY_HEIGHT - VERTICAL_PADDING;
 
 /// Calculate the largest font size that fits text within display bounds.
-/// Uses binary search between MIN_FONT_SIZE (8.0) and MAX_FONT_SIZE (80.0).
-/// Returns font size where text fits in 156x76 pixels (4px padding).
+/// Uses binary search between MIN_FONT_SIZE (8.0) and MAX_FONT_SIZE (72.0).
 pub fn calculate_auto_fit_size(text: &str) -> f32 {
+    calculate_auto_fit_size_oriented(text, Orientation::default())
+}
+
+/// Calculate auto-fit size for a specific orientation
+pub fn calculate_auto_fit_size_oriented(text: &str, orientation: Orientation) -> f32 {
     if text.is_empty() {
         return MIN_FONT_SIZE;
     }
+
+    let max_text_width = orientation.width() - HORIZONTAL_PADDING;
+    let max_text_height = orientation.height() - VERTICAL_PADDING;
 
     let mut low = MIN_FONT_SIZE;
     let mut high = MAX_FONT_SIZE;
@@ -98,7 +152,7 @@ pub fn calculate_auto_fit_size(text: &str) -> f32 {
         let mid = (low + high) / 2.0;
         let (width, height) = measure_multiline_text(text, mid);
 
-        if width <= MAX_TEXT_WIDTH && height <= MAX_TEXT_HEIGHT {
+        if width <= max_text_width && height <= max_text_height {
             low = mid;
         } else {
             high = mid;
@@ -124,6 +178,10 @@ fn measure_text(font: &FontRef, scale: PxScale, text: &str) -> (u32, u32) {
 }
 
 pub fn calculate_max_chars_per_line(font_size: f32) -> usize {
+    calculate_max_chars_per_line_oriented(font_size, Orientation::default())
+}
+
+pub fn calculate_max_chars_per_line_oriented(font_size: f32, orientation: Orientation) -> usize {
     let font = FontRef::try_from_slice(FONT_DATA).expect("Failed to load embedded font");
     let scale = PxScale::from(font_size);
 
@@ -134,13 +192,17 @@ pub fn calculate_max_chars_per_line(font_size: f32) -> usize {
     let avg_width = scaled_font.h_advance(font.glyph_id('x'));
 
     if avg_width > 0.0 {
-        (DISPLAY_WIDTH as f32 / avg_width).floor() as usize
+        (orientation.width() as f32 / avg_width).floor() as usize
     } else {
         0
     }
 }
 
 pub fn calculate_max_lines(font_size: f32) -> usize {
+    calculate_max_lines_oriented(font_size, Orientation::default())
+}
+
+pub fn calculate_max_lines_oriented(font_size: f32, orientation: Orientation) -> usize {
     let font = FontRef::try_from_slice(FONT_DATA).expect("Failed to load embedded font");
     let scale = PxScale::from(font_size);
 
@@ -150,17 +212,20 @@ pub fn calculate_max_lines(font_size: f32) -> usize {
     let line_height = scaled_font.height();
 
     if line_height > 0.0 {
-        (DISPLAY_HEIGHT as f32 / line_height).floor() as usize
+        (orientation.height() as f32 / line_height).floor() as usize
     } else {
         0
     }
 }
 
+/// Convert image to RGB565 bytes for display (uses image dimensions)
 pub fn image_to_rgb565_bytes(img: &RgbImage) -> Vec<u8> {
-    let mut data = Vec::with_capacity((DISPLAY_WIDTH * DISPLAY_HEIGHT * 2) as usize);
+    let width = img.width();
+    let height = img.height();
+    let mut data = Vec::with_capacity((width * height * 2) as usize);
 
-    for y in 0..DISPLAY_HEIGHT {
-        for x in 0..DISPLAY_WIDTH {
+    for y in 0..height {
+        for x in 0..width {
             let pixel = img.get_pixel(x, y);
             let r = pixel[0];
             let g = pixel[1];
@@ -265,9 +330,36 @@ mod tests {
 
     #[test]
     fn test_display_dimensions() {
-        // Portrait orientation: 80 wide × 160 tall
-        assert_eq!(DISPLAY_WIDTH, 80);
-        assert_eq!(DISPLAY_HEIGHT, 160);
+        // Landscape orientation (default): 160 wide × 80 tall
+        assert_eq!(DISPLAY_WIDTH, 160);
+        assert_eq!(DISPLAY_HEIGHT, 80);
+    }
+
+    #[test]
+    fn test_orientation_dimensions() {
+        // Landscape: 160x80
+        assert_eq!(Orientation::Landscape.width(), 160);
+        assert_eq!(Orientation::Landscape.height(), 80);
+
+        // Portrait: 80x160
+        assert_eq!(Orientation::Portrait.width(), 80);
+        assert_eq!(Orientation::Portrait.height(), 160);
+    }
+
+    #[test]
+    fn test_default_orientation_is_landscape() {
+        assert_eq!(Orientation::default(), Orientation::Landscape);
+    }
+
+    #[test]
+    fn test_oriented_blank_image_dimensions() {
+        let landscape = create_blank_image_oriented(Orientation::Landscape);
+        assert_eq!(landscape.width(), 160);
+        assert_eq!(landscape.height(), 80);
+
+        let portrait = create_blank_image_oriented(Orientation::Portrait);
+        assert_eq!(portrait.width(), 80);
+        assert_eq!(portrait.height(), 160);
     }
 
     #[cfg(feature = "japanese")]
@@ -325,11 +417,15 @@ mod tests {
 
     #[test]
     fn test_measure_dimensions() {
+        let orientation = Orientation::default();
+        let max_text_width = orientation.width() - HORIZONTAL_PADDING;
+        let max_text_height = orientation.height() - VERTICAL_PADDING;
+
         for font_size in [20.0, 40.0, 60.0, 70.0] {
             let (w, h) = measure_multiline_text("Hello", font_size);
             eprintln!(
                 "Hello at {}px: {}w x {}h (max: {}x{})",
-                font_size, w, h, MAX_TEXT_WIDTH, MAX_TEXT_HEIGHT
+                font_size, w, h, max_text_width, max_text_height
             );
         }
         let size = calculate_auto_fit_size("Hello");
@@ -337,16 +433,16 @@ mod tests {
         eprintln!("Auto-fit 'Hello': size={}, dims={}x{}", size, w, h);
 
         assert!(
-            w <= MAX_TEXT_WIDTH,
+            w <= max_text_width,
             "Width {} exceeds max {}",
             w,
-            MAX_TEXT_WIDTH
+            max_text_width
         );
         assert!(
-            h <= MAX_TEXT_HEIGHT,
+            h <= max_text_height,
             "Height {} exceeds max {}",
             h,
-            MAX_TEXT_HEIGHT
+            max_text_height
         );
     }
 }

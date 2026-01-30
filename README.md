@@ -94,12 +94,13 @@ Arguments:
   [TEXT]  Text to display [default: "Hello World!"]
 
 Options:
-  -s, --font-size <SIZE>  Font size in pixels [default: 14]
-  -a, --auto              Auto-fit text to largest readable size
-  -d, --delay <SECONDS>   Delay between pages [default: 2.0]
-  -l, --loop              Loop display continuously
-      --detect            Only check if display is connected
-  -h, --help              Print help
+  -s, --font-size <SIZE>        Font size in pixels [default: 14]
+  -a, --auto                    Auto-fit text to largest readable size
+  -o, --orientation <MODE>      Display orientation: landscape or portrait [default: landscape]
+  -d, --delay <SECONDS>         Delay between pages [default: 2.0]
+  -l, --loop                    Loop display continuously
+      --detect                  Only check if display is connected
+  -h, --help                    Print help
 ```
 
 ### Auto-Fit Mode
@@ -114,6 +115,18 @@ The `--auto` flag automatically calculates the largest font size that fits your 
 ./display-fs show --auto "Hello!"    # Uses ~40px font
 ```
 
+### Orientation Mode
+
+The `--orientation` flag switches between landscape (160x80, default) and portrait (80x160) modes:
+
+```bash
+# Landscape (default) - wider display
+./display-fs show --auto "Wide text"
+
+# Portrait - taller display, good for multi-line
+./display-fs show --auto -o portrait "Line 1\nLine 2\nLine 3"
+```
+
 ### Examples
 
 ```bash
@@ -125,6 +138,9 @@ The `--auto` flag automatically calculates the largest font size that fits your 
 
 # Auto-fit (recommended)
 ./display-fs show --auto "Status OK"
+
+# Portrait orientation with auto-fit
+./display-fs show --auto -o portrait "Tall"
 
 # Larger font (manual)
 ./display-fs show -s 24 "BIG"

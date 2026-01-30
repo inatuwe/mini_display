@@ -1,8 +1,8 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use display_fs::{
-    calculate_auto_fit_size, create_text_image, find_display_port, get_now_playing,
-    image_to_rgb565_bytes, is_display_connected, open_connection, send_image_to_display,
-    split_into_pages,
+    calculate_auto_fit_size_oriented, create_text_image_oriented, find_display_port,
+    get_now_playing, image_to_rgb565_bytes, is_display_connected, open_connection,
+    send_image_to_display_oriented, split_into_pages, Orientation,
 };
 use std::process::{Command, ExitCode};
 use std::thread;
@@ -40,6 +40,24 @@ enum Commands {
     Spotify(SpotifyArgs),
 }
 
+#[derive(Clone, Copy, Default, ValueEnum)]
+enum OrientationArg {
+    /// 160x80 - wider than tall (default)
+    #[default]
+    Landscape,
+    /// 80x160 - taller than wide
+    Portrait,
+}
+
+impl From<OrientationArg> for Orientation {
+    fn from(arg: OrientationArg) -> Self {
+        match arg {
+            OrientationArg::Landscape => Orientation::Landscape,
+            OrientationArg::Portrait => Orientation::Portrait,
+        }
+    }
+}
+
 #[derive(clap::Args, Clone)]
 struct DisplayOptions {
     /// Font size in pixels
@@ -49,6 +67,10 @@ struct DisplayOptions {
     /// Auto-fit text to largest readable size
     #[arg(short = 'a', long)]
     auto: bool,
+
+    /// Display orientation
+    #[arg(short = 'o', long, value_enum, default_value = "landscape")]
+    orientation: OrientationArg,
 
     /// Delay between pages/updates in seconds (must be positive)
     #[arg(short, long, default_value = "2.0", value_parser = validate_positive_f32)]
@@ -66,6 +88,10 @@ struct DisplayOptions {
 impl DisplayOptions {
     pub fn effective_delay(&self) -> f32 {
         self.speed.map_or(self.delay, |s| s.to_delay())
+    }
+
+    pub fn orientation(&self) -> Orientation {
+        self.orientation.into()
     }
 }
 
@@ -277,8 +303,12 @@ const ALL_PRESETS: [PresetName; 12] = [
 
 fn run_demo(display: DisplayOptions) -> ExitCode {
     let delay = display.effective_delay();
+    let orientation = display.orientation();
     println!("Demo mode: cycling through all presets (Ctrl+C to stop)");
-    println!("Delay: {}s between presets\n", delay);
+    println!(
+        "Delay: {}s between presets, orientation: {:?}\n",
+        delay, orientation
+    );
 
     let port_info = match find_display_port() {
         Some(p) => p,
@@ -307,10 +337,12 @@ fn run_demo(display: DisplayOptions) -> ExitCode {
             println!("[{}] {}", desc, text);
 
             let font_size = get_effective_font_size(&text, &display);
-            let img = create_text_image(&text, font_size);
+            let img = create_text_image_oriented(&text, font_size, orientation);
             let image_data = image_to_rgb565_bytes(&img);
 
-            if let Err(e) = send_image_to_display(&mut connection, &image_data) {
+            if let Err(e) =
+                send_image_to_display_oriented(&mut connection, &image_data, orientation)
+            {
                 println!("✗ Failed to send image: {}", e);
                 return ExitCode::FAILURE;
             }
@@ -321,6 +353,8 @@ fn run_demo(display: DisplayOptions) -> ExitCode {
 }
 
 fn run_spotify(args: SpotifyArgs) -> ExitCode {
+    let orientation = args.display.orientation();
+
     let port_info = match find_display_port() {
         Some(p) => p,
         None => {
@@ -366,10 +400,12 @@ fn run_spotify(args: SpotifyArgs) -> ExitCode {
 
         if should_update {
             let font_size = get_effective_font_size(&text, &args.display);
-            let img = create_text_image(&text, font_size);
+            let img = create_text_image_oriented(&text, font_size, orientation);
             let image_data = image_to_rgb565_bytes(&img);
 
-            if let Err(e) = send_image_to_display(&mut connection, &image_data) {
+            if let Err(e) =
+                send_image_to_display_oriented(&mut connection, &image_data, orientation)
+            {
                 println!("✗ Failed to send image: {}", e);
                 return ExitCode::FAILURE;
             }
@@ -415,7 +451,7 @@ fn detect_display() -> ExitCode {
 
 fn get_effective_font_size(text: &str, display: &DisplayOptions) -> f32 {
     if display.auto {
-        let size = calculate_auto_fit_size(text);
+        let size = calculate_auto_fit_size_oriented(text, display.orientation());
         println!("Auto-fit font size: {:.1}", size);
         size
     } else {
@@ -427,6 +463,7 @@ fn display_text(text: &str, display: &DisplayOptions) -> ExitCode {
     let font_size = get_effective_font_size(text, display);
     let delay = display.effective_delay();
     let loop_mode = display.r#loop;
+    let orientation = display.orientation();
 
     println!("Looking for Display FS V1...");
 
@@ -453,8 +490,8 @@ fn display_text(text: &str, display: &DisplayOptions) -> ExitCode {
     let needs_delay = page_count > 1 || loop_mode;
 
     println!(
-        "Text split into {} page(s) (font size: {})",
-        page_count, font_size
+        "Text split into {} page(s) (font size: {}, {:?})",
+        page_count, font_size, orientation
     );
 
     println!("Opening connection to {}...", port_info.name);
@@ -475,10 +512,10 @@ fn display_text(text: &str, display: &DisplayOptions) -> ExitCode {
                 println!("Displaying page {}/{}...", i + 1, page_count);
             }
 
-            let img = create_text_image(page, font_size);
+            let img = create_text_image_oriented(page, font_size, orientation);
             let image_data = image_to_rgb565_bytes(&img);
 
-            match send_image_to_display(&mut connection, &image_data) {
+            match send_image_to_display_oriented(&mut connection, &image_data, orientation) {
                 Ok(()) => {
                     if page_count == 1 && !loop_mode {
                         println!("✓ Image sent successfully!");
