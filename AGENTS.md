@@ -51,6 +51,43 @@ Plans in `.agents/plans/` follow this workflow:
 
 Each plan file has a `Status:` field at the top to track progress.
 
+### Writing Ralph-Ready Plans
+
+Plans intended for autonomous execution with the `ralph` skill must use this task format:
+
+```markdown
+- [ ] **Task N: Short descriptive title**
+  - Scope: `path/to/affected/files` or module name
+  - Depends on: Task M (or "none")
+  - Acceptance:
+    - Specific, verifiable criterion 1
+    - Specific, verifiable criterion 2
+  - Notes: Optional implementation hints
+```
+
+**Task sizing rule:** If you can't describe the task in 2-3 sentences, split it.
+
+**Task ordering:** Dependencies flow downward. Common order: Schema → Service → API → CLI → Tests
+
+**Task markers:**
+
+| Marker | Meaning |
+|--------|---------|
+| `- [ ]` | Not started |
+| `- [x]` | Completed |
+| `- [ ] (blocked)` | Blocked, needs intervention |
+| `- [ ] (manual-verify)` | Requires manual verification |
+
+**Running a plan:**
+
+```bash
+# Start fresh
+Run ralph on .agents/plans/in-progress/003-auto-fit-text.md
+
+# Resume from specific task
+Continue ralph from Task 3 on .agents/plans/in-progress/003-auto-fit-text.md
+```
+
 ## Commands
 
 ### Quick Commands (using `just`)
