@@ -2,12 +2,18 @@
 Tests for COM port enumeration functionality.
 """
 import pytest
+from unittest.mock import Mock, patch, MagicMock
+import serial
 from src.com_ports import (
     list_com_ports,
     format_port_info,
     is_display_fs_connected,
     find_display_port,
+    open_connection,
+    close_connection,
     DISPLAY_FS_VID_PID,
+    DEFAULT_BAUD_RATE,
+    DEFAULT_TIMEOUT,
 )
 
 
@@ -139,3 +145,87 @@ class TestFindDisplayPort:
         result = find_display_port()
         # Result is either a port object or None
         assert result is None or hasattr(result, 'device')
+
+
+class TestOpenConnection:
+    """Tests for open_connection function."""
+
+    @patch('src.com_ports.serial.Serial')
+    def test_opens_connection_with_correct_baud_rate(self, mock_serial):
+        """Function should open connection with correct baud rate (115200)."""
+        mock_connection = MagicMock()
+        mock_serial.return_value = mock_connection
+        
+        result = open_connection("COM3")
+        
+        mock_serial.assert_called_once_with(
+            "COM3",
+            baudrate=DEFAULT_BAUD_RATE,
+            timeout=DEFAULT_TIMEOUT
+        )
+        assert result is mock_connection
+
+    @patch('src.com_ports.serial.Serial')
+    def test_opens_connection_with_custom_baud_rate(self, mock_serial):
+        """Function should accept custom baud rate."""
+        mock_connection = MagicMock()
+        mock_serial.return_value = mock_connection
+        
+        result = open_connection("COM3", baud_rate=9600)
+        
+        mock_serial.assert_called_once_with(
+            "COM3",
+            baudrate=9600,
+            timeout=DEFAULT_TIMEOUT
+        )
+
+    @patch('src.com_ports.serial.Serial')
+    def test_raises_exception_on_invalid_port(self, mock_serial):
+        """Function should raise exception on invalid port."""
+        mock_serial.side_effect = serial.SerialException("Port not found")
+        
+        with pytest.raises(serial.SerialException):
+            open_connection("INVALID_PORT")
+
+    @patch('src.com_ports.serial.Serial')
+    def test_handles_timeout_parameter(self, mock_serial):
+        """Function should handle timeout parameter."""
+        mock_connection = MagicMock()
+        mock_serial.return_value = mock_connection
+        
+        result = open_connection("COM3", timeout=5.0)
+        
+        mock_serial.assert_called_once_with(
+            "COM3",
+            baudrate=DEFAULT_BAUD_RATE,
+            timeout=5.0
+        )
+
+
+class TestCloseConnection:
+    """Tests for close_connection function."""
+
+    def test_closes_open_connection(self):
+        """Function should close open connection."""
+        mock_connection = MagicMock()
+        mock_connection.is_open = True
+        
+        close_connection(mock_connection)
+        
+        mock_connection.close.assert_called_once()
+
+    def test_handles_already_closed_connection(self):
+        """Function should handle already closed connection gracefully."""
+        mock_connection = MagicMock()
+        mock_connection.is_open = False
+        
+        # Should not raise exception
+        close_connection(mock_connection)
+        
+        # close() should not be called if already closed
+        mock_connection.close.assert_not_called()
+
+    def test_handles_none_connection(self):
+        """Function should handle None connection gracefully."""
+        # Should not raise exception
+        close_connection(None)

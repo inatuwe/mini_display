@@ -1,6 +1,7 @@
 """
 COM port enumeration functionality.
 """
+import serial
 from serial.tools import list_ports
 
 
@@ -10,6 +11,10 @@ DISPLAY_FS_VID_PID = [
     (0x1A86, 0x7523),  # CH340
     (0x1A86, 0x5523),  # CH341
 ]
+
+# Default connection settings
+DEFAULT_BAUD_RATE = 115200
+DEFAULT_TIMEOUT = 1.0
 
 
 def list_com_ports():
@@ -77,3 +82,35 @@ def find_display_port(ports=None):
             if (vid, pid) in DISPLAY_FS_VID_PID:
                 return port
     return None
+
+
+def open_connection(port, baud_rate=DEFAULT_BAUD_RATE, timeout=DEFAULT_TIMEOUT):
+    """
+    Open a serial connection to the specified port.
+    
+    Args:
+        port: Port name (e.g., "COM3") or port object with device attribute.
+        baud_rate: Communication speed (default: 115200).
+        timeout: Read timeout in seconds (default: 1.0).
+        
+    Returns:
+        Serial connection object.
+        
+    Raises:
+        serial.SerialException: If connection cannot be opened.
+    """
+    port_name = port.device if hasattr(port, 'device') else port
+    return serial.Serial(port_name, baudrate=baud_rate, timeout=timeout)
+
+
+def close_connection(connection):
+    """
+    Close a serial connection.
+    
+    Args:
+        connection: Serial connection object to close.
+    """
+    if connection is None:
+        return
+    if connection.is_open:
+        connection.close()

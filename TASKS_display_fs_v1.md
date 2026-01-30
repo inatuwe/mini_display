@@ -66,25 +66,25 @@ Small, autonomous tasks to implement the Display FS V1 interaction program.
 
 ---
 
-## Task 4: Serial Connection
+## Task 4: Serial Connection ✅
 **Goal:** Establish serial connection to display
 
 ### 4.1 Write test for connection opening
-- [ ] Test: Function opens connection with correct baud rate (115200)
-- [ ] Test: Function raises exception on invalid port
-- [ ] Test: Function handles timeout parameter
+- [x] Test: Function opens connection with correct baud rate (115200)
+- [x] Test: Function raises exception on invalid port
+- [x] Test: Function handles timeout parameter
 
 ### 4.2 Implement connection opening
-- [ ] Implement: `open_connection(port, baud_rate=115200)` function
-- [ ] Verify: Test passes
+- [x] Implement: `open_connection(port, baud_rate=115200)` function
+- [x] Verify: Test passes
 
 ### 4.3 Write test for connection closing
-- [ ] Test: Function closes open connection
-- [ ] Test: Function handles already closed connection gracefully
+- [x] Test: Function closes open connection
+- [x] Test: Function handles already closed connection gracefully
 
 ### 4.4 Implement connection closing
-- [ ] Implement: `close_connection(connection)` function
-- [ ] Verify: Test passes
+- [x] Implement: `close_connection(connection)` function
+- [x] Verify: Test passes
 
 ---
 
