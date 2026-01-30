@@ -63,7 +63,7 @@ Install CH340/CH341 USB-Serial drivers if not automatically detected:
 
 ## Usage
 
-```
+```text
 display-fs [OPTIONS] [TEXT]
 
 Arguments:
@@ -93,7 +93,7 @@ Options:
 
 ## Project Structure
 
-```
+```text
 mini_display/
 ├── Cargo.toml             # Rust project configuration
 ├── src/                   # Rust source code

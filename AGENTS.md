@@ -23,9 +23,10 @@ mini_display/
 │   ├── research/                # Research and reference material
 │   │   ├── display_fs_v1_research.md
 │   │   └── python_implementation_completed.md
-│   └── plans/                   # Implementation plans (TODO/IN-PROGRESS/COMPLETED)
-│       ├── 001_rust_migration.md
-│       └── 002_rust_cleanup.md
+│   └── plans/                   # Implementation plans
+│       ├── todo/                # Planned but not started
+│       ├── in-progress/         # Currently being worked on
+│       └── completed/           # Finished and verified
 ├── src/                         # Rust source modules
 │   ├── main.rs                  # CLI entry point
 │   ├── lib.rs                   # Library exports
@@ -48,11 +49,6 @@ Plans in `.agents/plans/` follow this workflow:
 | **COMPLETED** | Finished and verified |
 
 Each plan file has a `Status:` field at the top to track progress.
-
-### Current Plans
-
-- `001_rust_migration.md` - Migrate from Python to Rust (COMPLETED)
-- `002_rust_cleanup.md` - Remove Python, migrate tests to Rust (COMPLETED)
 
 ## Commands
 
