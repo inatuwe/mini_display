@@ -64,3 +64,4 @@ Verify your skill by loading it and checking:
 |-------|---------|
 | `ralph` | Autonomous multi-iteration implementation using handoff loops |
 | `research` | Deep research on technical topics, saves to `.agents/research/` |
+| `tmux` | Manage background processes using tmux windows for servers and long-running tasks |
