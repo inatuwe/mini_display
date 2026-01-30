@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use display_fs::{
     calculate_auto_fit_size_oriented, create_text_image_oriented, find_display_port,
-    get_now_playing, image_to_rgb565_bytes, is_display_connected, open_connection,
+    get_now_playing, image_to_rgb565_bytes_oriented, is_display_connected, open_connection,
     send_image_to_display_oriented, split_into_pages, Orientation,
 };
 use std::process::{Command, ExitCode};
@@ -338,7 +338,7 @@ fn run_demo(display: DisplayOptions) -> ExitCode {
 
             let font_size = get_effective_font_size(&text, &display);
             let img = create_text_image_oriented(&text, font_size, orientation);
-            let image_data = image_to_rgb565_bytes(&img);
+            let image_data = image_to_rgb565_bytes_oriented(&img, orientation);
 
             if let Err(e) =
                 send_image_to_display_oriented(&mut connection, &image_data, orientation)
@@ -401,7 +401,7 @@ fn run_spotify(args: SpotifyArgs) -> ExitCode {
         if should_update {
             let font_size = get_effective_font_size(&text, &args.display);
             let img = create_text_image_oriented(&text, font_size, orientation);
-            let image_data = image_to_rgb565_bytes(&img);
+            let image_data = image_to_rgb565_bytes_oriented(&img, orientation);
 
             if let Err(e) =
                 send_image_to_display_oriented(&mut connection, &image_data, orientation)
@@ -513,7 +513,7 @@ fn display_text(text: &str, display: &DisplayOptions) -> ExitCode {
             }
 
             let img = create_text_image_oriented(page, font_size, orientation);
-            let image_data = image_to_rgb565_bytes(&img);
+            let image_data = image_to_rgb565_bytes_oriented(&img, orientation);
 
             match send_image_to_display_oriented(&mut connection, &image_data, orientation) {
                 Ok(()) => {

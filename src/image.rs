@@ -2,9 +2,9 @@ use ab_glyph::{FontRef, PxScale};
 use image::{Rgb, RgbImage};
 use imageproc::drawing::draw_text_mut;
 
-/// Physical display dimensions (hardware)
-const PHYSICAL_WIDTH: u32 = 160;
-const PHYSICAL_HEIGHT: u32 = 80;
+/// Physical display dimensions (hardware is 80x160 portrait)
+const PHYSICAL_WIDTH: u32 = 80;
+const PHYSICAL_HEIGHT: u32 = 160;
 
 /// Display orientation
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -17,26 +17,26 @@ pub enum Orientation {
 }
 
 impl Orientation {
-    /// Get display width for this orientation
+    /// Get logical display width for this orientation
     pub fn width(self) -> u32 {
         match self {
-            Orientation::Landscape => PHYSICAL_WIDTH,
-            Orientation::Portrait => PHYSICAL_HEIGHT,
+            Orientation::Landscape => PHYSICAL_HEIGHT, // 160
+            Orientation::Portrait => PHYSICAL_WIDTH,   // 80
         }
     }
 
-    /// Get display height for this orientation
+    /// Get logical display height for this orientation
     pub fn height(self) -> u32 {
         match self {
-            Orientation::Landscape => PHYSICAL_HEIGHT,
-            Orientation::Portrait => PHYSICAL_WIDTH,
+            Orientation::Landscape => PHYSICAL_WIDTH, // 80
+            Orientation::Portrait => PHYSICAL_HEIGHT, // 160
         }
     }
 }
 
-// Legacy constants for backward compatibility (default to landscape)
-pub const DISPLAY_WIDTH: u32 = PHYSICAL_WIDTH;
-pub const DISPLAY_HEIGHT: u32 = PHYSICAL_HEIGHT;
+// Legacy constants for backward compatibility (default to landscape: 160x80)
+pub const DISPLAY_WIDTH: u32 = PHYSICAL_HEIGHT; // 160
+pub const DISPLAY_HEIGHT: u32 = PHYSICAL_WIDTH; // 80
 
 #[cfg(feature = "japanese")]
 const FONT_DATA: &[u8] = include_bytes!("../assets/fonts/NotoSansJP-Regular.otf");
@@ -220,29 +220,50 @@ pub fn calculate_max_lines_oriented(font_size: f32, orientation: Orientation) ->
 
 /// Convert image to RGB565 bytes for display (uses image dimensions)
 pub fn image_to_rgb565_bytes(img: &RgbImage) -> Vec<u8> {
-    let width = img.width();
-    let height = img.height();
-    let mut data = Vec::with_capacity((width * height * 2) as usize);
+    image_to_rgb565_bytes_oriented(img, Orientation::default())
+}
 
-    for y in 0..height {
-        for x in 0..width {
-            let pixel = img.get_pixel(x, y);
-            let r = pixel[0];
-            let g = pixel[1];
-            let b = pixel[2];
+/// Convert image to RGB565 bytes, rotating if needed for landscape orientation.
+/// The physical display is 80x160 (portrait), so landscape images must be rotated 90° CW.
+pub fn image_to_rgb565_bytes_oriented(img: &RgbImage, orientation: Orientation) -> Vec<u8> {
+    let mut data = Vec::with_capacity((PHYSICAL_WIDTH * PHYSICAL_HEIGHT * 2) as usize);
 
-            let r5 = (r >> 3) & 0x1F;
-            let g6 = (g >> 2) & 0x3F;
-            let b5 = (b >> 3) & 0x1F;
-
-            let rgb565 = ((r5 as u16) << 11) | ((g6 as u16) << 5) | (b5 as u16);
-
-            data.push((rgb565 & 0xFF) as u8);
-            data.push((rgb565 >> 8) as u8);
+    match orientation {
+        Orientation::Portrait => {
+            // Portrait: send as-is (80x160)
+            for y in 0..img.height() {
+                for x in 0..img.width() {
+                    let pixel = img.get_pixel(x, y);
+                    push_rgb565(&mut data, pixel[0], pixel[1], pixel[2]);
+                }
+            }
+        }
+        Orientation::Landscape => {
+            // Landscape: rotate 90° CW to fit physical 80x160 display
+            // Input is 160w x 80h, output is 80w x 160h
+            // Physical output scans row-by-row (py=0..160, px=0..80)
+            // Maps to logical: lx = py, ly = 79 - px
+            for py in 0..PHYSICAL_HEIGHT {
+                for px in 0..PHYSICAL_WIDTH {
+                    let lx = py;
+                    let ly = (PHYSICAL_WIDTH - 1) - px; // 79 - px
+                    let pixel = img.get_pixel(lx, ly);
+                    push_rgb565(&mut data, pixel[0], pixel[1], pixel[2]);
+                }
+            }
         }
     }
 
     data
+}
+
+fn push_rgb565(data: &mut Vec<u8>, r: u8, g: u8, b: u8) {
+    let r5 = (r >> 3) & 0x1F;
+    let g6 = (g >> 2) & 0x3F;
+    let b5 = (b >> 3) & 0x1F;
+    let rgb565 = ((r5 as u16) << 11) | ((g6 as u16) << 5) | (b5 as u16);
+    data.push((rgb565 & 0xFF) as u8);
+    data.push((rgb565 >> 8) as u8);
 }
 
 #[cfg(test)]

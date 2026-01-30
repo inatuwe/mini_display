@@ -18,11 +18,16 @@ pub fn create_bitmap_header() -> [u8; 10] {
     create_bitmap_header_oriented(Orientation::default())
 }
 
-pub fn create_bitmap_header_oriented(orientation: Orientation) -> [u8; 10] {
+/// Physical display dimensions (always 80x160 portrait)
+const PHYSICAL_WIDTH: u16 = 80;
+const PHYSICAL_HEIGHT: u16 = 160;
+
+pub fn create_bitmap_header_oriented(_orientation: Orientation) -> [u8; 10] {
+    // Always use physical dimensions - rotation is handled in image data
     let x0: u16 = 0;
     let y0: u16 = 0;
-    let x1: u16 = orientation.width() as u16 - 1;
-    let y1: u16 = orientation.height() as u16 - 1;
+    let x1: u16 = PHYSICAL_WIDTH - 1;
+    let y1: u16 = PHYSICAL_HEIGHT - 1;
 
     [
         CMD_SET_BITMAP,
@@ -57,7 +62,7 @@ pub fn send_image_to_display_oriented(
     port.write_all(&header)?;
     port.flush()?;
 
-    let chunk_size = orientation.width() as usize * 4;
+    let chunk_size = PHYSICAL_WIDTH as usize * 4;
     for chunk in image_data.chunks(chunk_size) {
         port.write_all(chunk)?;
     }
@@ -84,29 +89,21 @@ mod tests {
     }
 
     #[test]
-    fn test_bitmap_header_coordinates_landscape() {
-        let header = create_bitmap_header_oriented(Orientation::Landscape);
-        // x0 = 0 (little-endian: bytes 1-2)
-        assert_eq!(header[1], 0x00); // x0 low
-        assert_eq!(header[2], 0x00); // x0 high
-                                     // y0 = 0 (little-endian: bytes 3-4)
-        assert_eq!(header[3], 0x00); // y0 low
-        assert_eq!(header[4], 0x00); // y0 high
-                                     // Landscape: x1 = 159, y1 = 79
-        assert_eq!(header[5], 0x9F); // x1 low (159 = 0x9F)
-        assert_eq!(header[6], 0x00); // x1 high
-        assert_eq!(header[7], 0x4F); // y1 low (79 = 0x4F)
-        assert_eq!(header[8], 0x00); // y1 high
-    }
-
-    #[test]
-    fn test_bitmap_header_coordinates_portrait() {
-        let header = create_bitmap_header_oriented(Orientation::Portrait);
-        // Portrait: x1 = 79, y1 = 159
-        assert_eq!(header[5], 0x4F); // x1 low (79 = 0x4F)
-        assert_eq!(header[6], 0x00); // x1 high
-        assert_eq!(header[7], 0x9F); // y1 low (159 = 0x9F)
-        assert_eq!(header[8], 0x00); // y1 high
+    fn test_bitmap_header_always_physical_dimensions() {
+        // Both orientations use physical 80x160 dimensions
+        for orientation in [Orientation::Landscape, Orientation::Portrait] {
+            let header = create_bitmap_header_oriented(orientation);
+            // x0 = 0, y0 = 0
+            assert_eq!(header[1], 0x00); // x0 low
+            assert_eq!(header[2], 0x00); // x0 high
+            assert_eq!(header[3], 0x00); // y0 low
+            assert_eq!(header[4], 0x00); // y0 high
+                                         // Physical: x1 = 79, y1 = 159
+            assert_eq!(header[5], 0x4F); // x1 low (79 = 0x4F)
+            assert_eq!(header[6], 0x00); // x1 high
+            assert_eq!(header[7], 0x9F); // y1 low (159 = 0x9F)
+            assert_eq!(header[8], 0x00); // y1 high
+        }
     }
 
     #[test]
@@ -116,10 +113,8 @@ mod tests {
     }
 
     #[test]
-    fn test_chunk_size_by_orientation() {
-        // Landscape: 160 * 4 = 640
-        assert_eq!(Orientation::Landscape.width() as usize * 4, 640);
-        // Portrait: 80 * 4 = 320
-        assert_eq!(Orientation::Portrait.width() as usize * 4, 320);
+    fn test_chunk_size_physical() {
+        // Always uses physical width: 80 * 4 = 320
+        assert_eq!(PHYSICAL_WIDTH as usize * 4, 320);
     }
 }
