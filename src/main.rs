@@ -13,7 +13,30 @@ use std::time::Duration;
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
+}
 
+#[derive(Subcommand)]
+enum Commands {
+    /// Run a built-in preset demo
+    Preset {
+        /// Preset name to run
+        #[arg(value_enum)]
+        name: PresetName,
+    },
+    /// List all available presets
+    Presets,
+    /// Demo mode: cycle through all presets in a loop
+    Demo {
+        /// Delay between presets in seconds
+        #[arg(short, long, default_value = "5")]
+        delay: f32,
+    },
+    /// Display text on the screen (default command)
+    Show(ShowArgs),
+}
+
+#[derive(clap::Args)]
+struct ShowArgs {
     /// Text to display (default: "Hello World!")
     #[arg(default_value = "Hello World!")]
     text: String,
@@ -41,24 +64,6 @@ struct Cli {
     /// Speed preset (overrides --delay if provided)
     #[arg(long, value_enum)]
     speed: Option<SpeedPreset>,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    /// Run a built-in preset demo
-    Preset {
-        /// Preset name to run
-        #[arg(value_enum)]
-        name: PresetName,
-    },
-    /// List all available presets
-    Presets,
-    /// Demo mode: cycle through all presets in a loop
-    Demo {
-        /// Delay between presets in seconds
-        #[arg(short, long, default_value = "5")]
-        delay: f32,
-    },
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -176,24 +181,31 @@ fn validate_positive_f32(s: &str) -> Result<f32, String> {
 fn main() -> ExitCode {
     let cli = Cli::parse();
 
-    // Handle subcommands first
-    if let Some(cmd) = cli.command {
-        return match cmd {
-            Commands::Preset { name } => run_preset(name),
-            Commands::Presets => list_presets(),
-            Commands::Demo { delay } => run_demo(delay),
-        };
+    match cli.command {
+        Some(Commands::Preset { name }) => run_preset(name),
+        Some(Commands::Presets) => list_presets(),
+        Some(Commands::Demo { delay }) => run_demo(delay),
+        Some(Commands::Show(args)) => run_show(args),
+        None => {
+            // Default: show help
+            use clap::CommandFactory;
+            Cli::command().print_help().ok();
+            println!();
+            ExitCode::SUCCESS
+        }
     }
+}
 
-    if cli.detect {
+fn run_show(args: ShowArgs) -> ExitCode {
+    if args.detect {
         return detect_display();
     }
 
     // Compute effective delay: speed preset overrides --delay
-    let delay = cli.speed.map_or(cli.delay, |s| s.to_delay());
-    let loop_mode = cli.r#loop;
+    let delay = args.speed.map_or(args.delay, |s| s.to_delay());
+    let loop_mode = args.r#loop;
 
-    display_text(&cli.text, cli.font_size, delay, loop_mode)
+    display_text(&args.text, args.font_size, delay, loop_mode)
 }
 
 fn list_presets() -> ExitCode {
