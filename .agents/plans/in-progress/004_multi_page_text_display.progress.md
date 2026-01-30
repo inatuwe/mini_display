@@ -45,6 +45,20 @@
 ### Iteration 4
 **Started:** 2026-01-30
 **Task:** Task 4 - Add loop and speed CLI parameters
+**Status:** Complete
+
+**Changes:**
+- Added --loop flag for continuous display
+- Added --once flag for single display (default)
+- Added --speed <preset> with slow/normal/fast values
+- Speed presets override delay if provided
+- Help text updated with all options
+
+---
+
+### Iteration 5
+**Started:** 2026-01-30
+**Task:** Task 5 - Implement multi-page display loop
 **Status:** In progress
 
 ---

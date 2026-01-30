@@ -40,7 +40,7 @@ Extend the CLI to handle long text that doesn't fit on the 160x80 display, autom
     - Help text updated
   - Notes: Use clap for argument parsing
 
-- [ ] **Task 4: Add loop and speed CLI parameters**
+- [x] **Task 4: Add loop and speed CLI parameters**
   - Scope: `src/main.rs`
   - Depends on: Task 3
   - Acceptance:

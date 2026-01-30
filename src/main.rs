@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use display_fs::{
     create_text_image, find_display_port, image_to_rgb565_bytes, is_display_connected,
     open_connection, send_image_to_display,
@@ -24,6 +24,38 @@ struct Cli {
     /// Delay between pages in seconds (must be positive)
     #[arg(long, default_value = "2.0", value_parser = validate_positive_f32)]
     delay: f32,
+
+    /// Loop display continuously (until Ctrl+C)
+    #[arg(long, conflicts_with = "once")]
+    r#loop: bool,
+
+    /// Display once only (default behavior)
+    #[arg(long, conflicts_with = "loop")]
+    once: bool,
+
+    /// Speed preset (overrides --delay if provided)
+    #[arg(long, value_enum)]
+    speed: Option<SpeedPreset>,
+}
+
+#[derive(Clone, Copy, ValueEnum)]
+enum SpeedPreset {
+    /// 4 seconds between pages
+    Slow,
+    /// 2 seconds between pages
+    Normal,
+    /// 1 second between pages
+    Fast,
+}
+
+impl SpeedPreset {
+    pub fn to_delay(self) -> f32 {
+        match self {
+            SpeedPreset::Slow => 4.0,
+            SpeedPreset::Normal => 2.0,
+            SpeedPreset::Fast => 1.0,
+        }
+    }
 }
 
 fn validate_positive_f32(s: &str) -> Result<f32, String> {
@@ -44,7 +76,11 @@ fn main() -> ExitCode {
         return detect_display();
     }
 
-    display_text(&cli.text, cli.font_size)
+    // Compute effective delay: speed preset overrides --delay
+    let delay = cli.speed.map_or(cli.delay, |s| s.to_delay());
+    let loop_mode = cli.r#loop;
+
+    display_text(&cli.text, cli.font_size, delay, loop_mode)
 }
 
 fn detect_display() -> ExitCode {
@@ -64,7 +100,7 @@ fn detect_display() -> ExitCode {
     ExitCode::FAILURE
 }
 
-fn display_text(text: &str, font_size: f32) -> ExitCode {
+fn display_text(text: &str, font_size: f32, _delay: f32, _loop_mode: bool) -> ExitCode {
     println!("Looking for Display FS V1...");
 
     let port_info = match find_display_port() {
