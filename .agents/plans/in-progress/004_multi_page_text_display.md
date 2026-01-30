@@ -20,7 +20,7 @@ Extend the CLI to handle long text that doesn't fit on the 160x80 display, autom
     - Functions exported in `lib.rs`
   - Notes: Based on display 160x80 and embedded DejaVuSans font
 
-- [ ] **Task 2: Create text splitting module**
+- [x] **Task 2: Create text splitting module**
   - Scope: `src/text.rs`, `src/lib.rs`
   - Depends on: Task 1
   - Acceptance:

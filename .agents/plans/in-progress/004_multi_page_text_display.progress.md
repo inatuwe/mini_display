@@ -19,6 +19,20 @@
 ### Iteration 2
 **Started:** 2026-01-30
 **Task:** Task 2 - Create text splitting module
+**Status:** Complete
+
+**Changes:**
+- Created src/text.rs with split_into_pages() function
+- Word-aware splitting implemented
+- Handles newlines in input text
+- 8 unit tests added and passing
+- Exported in lib.rs
+
+---
+
+### Iteration 3
+**Started:** 2026-01-30
+**Task:** Task 3 - Add delay CLI parameter
 **Status:** In progress
 
 ---
