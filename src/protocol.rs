@@ -5,6 +5,7 @@ use std::thread::sleep;
 use std::time::Duration;
 use thiserror::Error;
 
+const CMD_SET_ORIENTATION: u8 = 0x02;
 const CMD_SET_BITMAP: u8 = 0x05;
 const CMD_END: u8 = 0x0A;
 
@@ -50,6 +51,16 @@ pub fn send_image_to_display(
     send_image_to_display_oriented(port, image_data, Orientation::default())
 }
 
+/// Create orientation command to initialize display orientation
+fn create_orientation_command(orientation: Orientation) -> [u8; 3] {
+    // Orientation values: 0=portrait, 1=landscape, 2=portrait_flip, 3=landscape_flip
+    let orientation_value = match orientation {
+        Orientation::Portrait => 0,
+        Orientation::Landscape => 1,
+    };
+    [CMD_SET_ORIENTATION, orientation_value, CMD_END]
+}
+
 pub fn send_image_to_display_oriented(
     port: &mut Box<dyn SerialPort>,
     image_data: &[u8],
@@ -57,6 +68,12 @@ pub fn send_image_to_display_oriented(
 ) -> Result<(), ProtocolError> {
     port.clear(serialport::ClearBuffer::All)
         .map_err(|e| ProtocolError::SendFailed(std::io::Error::other(e)))?;
+
+    // Send orientation command first
+    let orient_cmd = create_orientation_command(orientation);
+    port.write_all(&orient_cmd)?;
+    port.flush()?;
+    sleep(Duration::from_millis(50));
 
     let header = create_bitmap_header_oriented(orientation);
     port.write_all(&header)?;
