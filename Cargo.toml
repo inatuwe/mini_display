@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 description = "CLI tool for WeAct Studio Display FS V1 (0.96 inch)"
 
+[features]
+default = []
+japanese = []
+
 [lib]
 path = "src/lib.rs"
 

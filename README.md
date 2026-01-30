@@ -47,11 +47,32 @@ Requires [Rust](https://rustup.rs/):
 # Install Rust (if not installed)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Build release binary
+# Build release binary (Latin only, ~1.5 MB)
 cargo build --release
+
+# Build with Japanese/CJK support (~6.5 MB)
+cargo build --release --features japanese
 
 # Binary is at: ./target/release/display-fs
 ```
+
+#### Japanese/CJK Font Support
+
+The default build uses DejaVuSans font (~750 KB) for Latin text. For Japanese song titles or CJK characters, build with the `japanese` feature:
+
+```bash
+# Using just (recommended)
+just build-jp       # Build with Japanese support
+just install-jp     # Install japanese-enabled binary
+
+# Or with cargo
+cargo build --release --features japanese
+```
+
+| Build | Font | Binary Size |
+|-------|------|-------------|
+| Default | DejaVuSans | ~1.5 MB |
+| `--features japanese` | Noto Sans JP | ~6.5 MB |
 
 ### Driver
 

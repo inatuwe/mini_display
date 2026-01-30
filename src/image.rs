@@ -5,6 +5,10 @@ use imageproc::drawing::draw_text_mut;
 pub const DISPLAY_WIDTH: u32 = 160;
 pub const DISPLAY_HEIGHT: u32 = 80;
 
+#[cfg(feature = "japanese")]
+const FONT_DATA: &[u8] = include_bytes!("../assets/fonts/NotoSansJP-Regular.otf");
+
+#[cfg(not(feature = "japanese"))]
 const FONT_DATA: &[u8] = include_bytes!("../assets/fonts/DejaVuSans.ttf");
 
 pub fn create_blank_image() -> RgbImage {
@@ -194,5 +198,16 @@ mod tests {
     fn test_display_dimensions() {
         assert_eq!(DISPLAY_WIDTH, 160);
         assert_eq!(DISPLAY_HEIGHT, 80);
+    }
+
+    #[cfg(feature = "japanese")]
+    #[test]
+    fn test_japanese_text_renders() {
+        let blank = create_blank_image();
+        let text_img = create_text_image("こんにちは", 14.0);
+
+        let blank_bytes = image_to_rgb565_bytes(&blank);
+        let text_bytes = image_to_rgb565_bytes(&text_img);
+        assert_ne!(blank_bytes, text_bytes, "Japanese text should render visible content");
     }
 }
