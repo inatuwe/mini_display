@@ -77,6 +77,10 @@ struct SpotifyArgs {
     /// Update interval in seconds (only with --loop)
     #[arg(short, long, default_value = "2")]
     interval: f32,
+
+    /// Font size in pixels
+    #[arg(short = 's', long, default_value = "18")]
+    font_size: f32,
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -353,7 +357,7 @@ fn run_spotify(args: SpotifyArgs) -> ExitCode {
         let should_update = current != last_track;
 
         if should_update {
-            let img = create_text_image(&text, 14.0);
+            let img = create_text_image(&text, args.font_size);
             let image_data = image_to_rgb565_bytes(&img);
 
             if let Err(e) = send_image_to_display(&mut connection, &image_data) {
