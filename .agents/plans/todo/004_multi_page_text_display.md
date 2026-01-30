@@ -8,144 +8,78 @@
 
 Extend the CLI to handle long text that doesn't fit on the 160x80 display, automatically splitting it into pages and displaying them sequentially with configurable delays.
 
-## Current Behavior
+## Tasks
 
-- Text is rendered centered on a single 160x80 frame
-- Long text gets clipped or overflows
-- No support for multi-line or multi-page content
+- [ ] **Task 1: Expose text measurement utilities**
+  - Scope: `src/image.rs`, `src/lib.rs`
+  - Depends on: none
+  - Acceptance:
+    - `measure_text()` is public and accessible
+    - Add `calculate_max_chars_per_line(font_size: f32) -> usize` function
+    - Add `calculate_max_lines(font_size: f32) -> usize` function
+    - Functions exported in `lib.rs`
+  - Notes: Based on display 160x80 and embedded DejaVuSans font
 
-## Proposed Features
+- [ ] **Task 2: Create text splitting module**
+  - Scope: `src/text.rs`, `src/lib.rs`
+  - Depends on: Task 1
+  - Acceptance:
+    - New `src/text.rs` module created
+    - `split_into_pages(text: &str, font_size: f32) -> Vec<String>` implemented
+    - Word-aware splitting (never breaks mid-word)
+    - Handles newlines in input text
+    - Module exported in `lib.rs`
+  - Notes: Use measurement functions from Task 1
 
-### Core Features
+- [ ] **Task 3: Add delay CLI parameter**
+  - Scope: `src/main.rs`
+  - Depends on: none
+  - Acceptance:
+    - `--delay <seconds>` flag added (f32, default: 2.0)
+    - Validated as positive number
+    - Help text updated
+  - Notes: Use clap for argument parsing
 
-1. **Text Splitting** - Intelligently split text into display-sized chunks
-   - Word-aware splitting (never break words)
-   - Calculate max characters per line based on font size
-   - Support multi-line display (2-3 lines depending on font size)
+- [ ] **Task 4: Add loop and speed CLI parameters**
+  - Scope: `src/main.rs`
+  - Depends on: Task 3
+  - Acceptance:
+    - `--loop` flag for continuous display
+    - `--once` flag for single display (default)
+    - `--speed <preset>` with values: slow (4s), normal (2s), fast (1s)
+    - Speed presets override delay if both provided
+  - Notes: Loop mode runs until Ctrl+C
 
-2. **Page Display Loop** - Show pages sequentially
-   - Configurable delay between pages (default: 2-3 seconds)
-   - Option to loop continuously or display once
+- [ ] **Task 5: Implement multi-page display loop**
+  - Scope: `src/main.rs`, `src/lib.rs`
+  - Depends on: Task 2, Task 4
+  - Acceptance:
+    - Text automatically split into pages using `split_into_pages()`
+    - Pages displayed sequentially with configured delay
+    - Loop mode repeats indefinitely
+    - Single page text still works (no delay needed)
+  - Notes: Use `std::thread::sleep` for delays
 
-3. **CLI Parameters**
+- [ ] **Task 6: Add unit tests for text splitting**
+  - Scope: `src/text.rs`
+  - Depends on: Task 2
+  - Acceptance:
+    - Test empty string input
+    - Test single word that fits
+    - Test text requiring multiple pages
+    - Test word-boundary splitting (no mid-word breaks)
+    - Test input with newlines
+    - All tests pass with `just test`
+  - Notes: Use inline `#[cfg(test)]` module
 
-   ```bash
-   display-fs "Long text that spans multiple pages"
-   display-fs "Long text" --delay 3        # 3 seconds between pages
-   display-fs "Long text" --loop           # Repeat forever
-   display-fs "Long text" --once           # Show once (default)
-   display-fs "Long text" --speed slow     # Presets: slow/normal/fast
-   ```
-
-### Additional CLI Enhancements
-
-1. **Text Alignment Options**
-
-   ```bash
-   display-fs "Text" --align left|center|right
-   ```
-
-2. **Text Color Options**
-
-   ```bash
-   display-fs "Text" --color white|red|green|blue|yellow|cyan
-   display-fs "Text" --color "#FF5500"     # Hex color
-   ```
-
-3. **Background Color**
-
-   ```bash
-   display-fs "Text" --bg black|white|...
-   ```
-
-4. **Clear Display**
-
-   ```bash
-   display-fs --clear                      # Show blank screen
-   ```
-
-5. **Display Image File**
-
-   ```bash
-   display-fs --image path/to/image.png    # Display an image
-   ```
-
-6. **Verbose/Quiet Modes**
-
-   ```bash
-   display-fs "Text" --quiet               # No status output
-   display-fs "Text" -v                    # Verbose output
-   ```
-
-## Implementation Plan
-
-### Phase 1: Text Measurement & Splitting
-
-1. **Expose text measurement** in `image.rs`
-   - Make `measure_text()` public
-   - Add `calculate_max_chars_per_line(font_size) -> usize`
-   - Add `calculate_max_lines(font_size) -> usize`
-
-2. **Create text splitter** in new `src/text.rs`
-   - `split_into_pages(text: &str, font_size: f32) -> Vec<String>`
-   - Word-aware splitting
-   - Handle newlines in input
-
-### Phase 2: Multi-Page Display Loop
-
-1. **Update `display_text()` function**
-   - Accept delay parameter
-   - Loop through pages
-   - Send each page to display with delay
-
-2. **Add CLI parameters**
-   - `--delay <seconds>` (f32, default: 2.0)
-   - `--loop` flag for continuous display
-   - `--speed <preset>` for quick configuration
-
-### Phase 3: Color & Alignment (Optional)
-
-1. **Update `create_text_image()` signature**
-   - Add color parameter: `Rgb<u8>`
-   - Add background color parameter
-   - Add alignment enum: `Left | Center | Right`
-
-2. **Add CLI color flags**
-   - Parse color names and hex codes
-   - Validate input
-
-### Phase 4: Image Display (Optional)
-
-1. **Add image loading** in `image.rs`
-   - Load PNG/JPEG
-   - Resize to 160x80
-   - Convert to RGB565
-
-2. **Add `--image` CLI flag**
-
-## Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/main.rs` | Add CLI args, multi-page loop, color parsing |
-| `src/image.rs` | Public measure_text, add color/alignment params |
-| `src/text.rs` | NEW: Text splitting logic |
-| `src/lib.rs` | Export new types and functions |
-
-## Testing Strategy
-
-- Unit tests for text splitting edge cases
-- Unit tests for color parsing
-- Integration test with mock display (if feasible)
-
-## Success Criteria
-
-- [ ] Long text displays across multiple pages automatically
-- [ ] Delay between pages is configurable
-- [ ] Words are never split mid-word
-- [ ] Loop mode works correctly
-- [ ] Color options work (Phase 3)
-- [ ] Image display works (Phase 4)
+- [ ] **Task 7: Integration verification**
+  - Scope: `src/main.rs`
+  - Depends on: Task 5, Task 6
+  - Acceptance:
+    - `just ci` passes (fmt + lint + test)
+    - Example command works: `cargo run -- "Long text message" --delay 2`
+    - Loop mode works: `cargo run -- "Message" --loop`
+  - Notes: (manual-verify) Requires display connected for visual check
 
 ## Example Usage
 
@@ -156,9 +90,17 @@ display-fs "Welcome to the Display FS demo! This text is too long to fit on one 
 # Continuous notification loop
 display-fs "Server status: OK | CPU: 45% | Memory: 2.1GB" --loop --delay 5
 
-# Quick status with color
-display-fs "BUILD PASSED" --color green --delay 3
-
-# Error notification
-display-fs "ERROR: Connection failed" --color red --loop --delay 1
+# Quick status with speed preset
+display-fs "BUILD PASSED" --speed fast
 ```
+
+## Future Enhancements (Not in Scope)
+
+These features are documented for future plans:
+
+- Text alignment options (`--align left|center|right`)
+- Text color options (`--color white|red|green|...`)
+- Background color (`--bg black|white|...`)
+- Clear display command (`--clear`)
+- Image file display (`--image path/to/image.png`)
+- Verbose/quiet modes (`-v`, `--quiet`)
