@@ -44,8 +44,14 @@ mini_display/
 - `open_connection(port, baud_rate=115200, timeout=1.0)` - Open serial connection
 - `close_connection(connection)` - Close serial connection safely
 
+### Image Creation (Task 5) ✅
+- `create_blank_image(width, height, bg_color)` - Create blank RGB image
+- `draw_text(image, text, position, font_size, color)` - Draw text on image
+- `create_hello_world_image()` - Create "Hello World!" image for display
+- Display dimensions: 160x80 pixels
+
 ## Pending Features
-- Task 5: Image Creation
+- Task 6: Image to Bytes Conversion
 - Task 6: Image Sending
 - Task 7: Hello World Display
 
