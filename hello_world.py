@@ -4,13 +4,14 @@ Hello World Display Script
 
 Displays "Hello World!" on the WeAct Studio Display FS V1 (0.96 inch).
 """
+import argparse
 from src.com_ports import (
     find_display_port,
     open_connection,
     close_connection,
 )
 from src.image import (
-    create_hello_world_image,
+    create_text_image,
     image_to_bytes,
 )
 from src.serial_comm import (
@@ -18,9 +19,13 @@ from src.serial_comm import (
 )
 
 
-def main():
+def main(text="Hello World!", font_size=14):
     """
-    Main function to display "Hello World!" on the display.
+    Main function to display text on the display.
+    
+    Args:
+        text: Text to display (default: "Hello World!").
+        font_size: Font size in pixels (default: 14).
     
     Returns:
         bool: True if successful, False otherwise.
@@ -43,8 +48,8 @@ def main():
     print(f"✓ Found display on {port.device}")
     
     # Create image
-    print("Creating Hello World image...")
-    image = create_hello_world_image()
+    print(f"Creating image with text: '{text}' (font size: {font_size})")
+    image = create_text_image(text, font_size)
     image_data = image_to_bytes(image)
     print(f"  Image size: {len(image_data)} bytes")
     
@@ -78,5 +83,12 @@ def main():
 
 
 if __name__ == "__main__":
-    result = main()
+    parser = argparse.ArgumentParser(description="Display text on Display FS V1")
+    parser.add_argument("-s", "--font-size", type=int, default=14,
+                        help="Font size in pixels (default: 14)")
+    parser.add_argument("-t", "--text", default="Hello World!",
+                        help="Text to display (default: 'Hello World!')")
+    args = parser.parse_args()
+    
+    result = main(text=args.text, font_size=args.font_size)
     exit(0 if result else 1)

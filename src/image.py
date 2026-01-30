@@ -1,6 +1,7 @@
 """
 Image creation functionality for Display FS V1.
 """
+import os
 from PIL import Image, ImageDraw, ImageFont
 
 
@@ -8,6 +9,9 @@ from PIL import Image, ImageDraw, ImageFont
 # Landscape mode: 160 wide x 80 tall
 DISPLAY_WIDTH = 160
 DISPLAY_HEIGHT = 80
+
+# Path to bundled font
+FONT_PATH = os.path.join(os.path.dirname(__file__), "..", "assets", "fonts", "DejaVuSans.ttf")
 
 
 def create_blank_image(width=DISPLAY_WIDTH, height=DISPLAY_HEIGHT, bg_color=(0, 0, 0)):
@@ -41,11 +45,11 @@ def draw_text(image, text, position=None, font_size=12, color=(255, 255, 255)):
     """
     draw = ImageDraw.Draw(image)
     
-    # Try to use a default font, fall back to basic font if not available
+    # Try to use bundled font, fall back to default if not available
     try:
-        font = ImageFont.truetype("arial.ttf", font_size)
+        font = ImageFont.truetype(FONT_PATH, font_size)
     except (IOError, OSError):
-        # Fall back to default font
+        print(f"Warning: Font not found at {FONT_PATH}, using default (size ignored)")
         font = ImageFont.load_default()
     
     # Get text bounding box for centering
@@ -65,6 +69,21 @@ def draw_text(image, text, position=None, font_size=12, color=(255, 255, 255)):
     return image
 
 
+def create_text_image(text="Hello World!", font_size=14):
+    """
+    Create an image with custom text for the display.
+    
+    Args:
+        text: Text string to display (default: "Hello World!").
+        font_size: Font size in pixels (default: 14).
+    
+    Returns:
+        PIL Image object with text centered.
+    """
+    image = create_blank_image()
+    return draw_text(image, text, font_size=font_size)
+
+
 def create_hello_world_image():
     """
     Create an image with "Hello World!" text for the display.
@@ -72,9 +91,7 @@ def create_hello_world_image():
     Returns:
         PIL Image object with "Hello World!" text centered.
     """
-    image = create_blank_image()
-    # Landscape mode - single line fits better
-    return draw_text(image, "Hello from SoCraTes!", font_size=14)
+    return create_text_image("Hello from SoCraTes!", font_size=14)
 
 
 def image_to_bytes(image):

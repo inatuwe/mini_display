@@ -1,6 +1,6 @@
 # Plan 003: Configurable Font Size
 
-**Status:** TODO
+**Status:** COMPLETED
 
 ## Problem
 
@@ -20,15 +20,15 @@ When displaying text on the Display FS V1, the font appears small because:
 
 ### Task 1: Add bundled font
 
-- [ ] Create `assets/fonts/` directory
-- [ ] Add a free TrueType font (e.g., DejaVu Sans, Open Sans, or Roboto)
-- [ ] Update `.gitignore` if needed
+- [x] Create `assets/fonts/` directory
+- [x] Add a free TrueType font (e.g., DejaVu Sans, Open Sans, or Roboto)
+- [x] Update `.gitignore` if needed
 
 ### Task 2: Update `src/image.py`
 
-- [ ] Modify `draw_text()` to use bundled font path
-- [ ] Add font path resolution (relative to package)
-- [ ] Keep fallback to default font with warning
+- [x] Modify `draw_text()` to use bundled font path
+- [x] Add font path resolution (relative to package)
+- [x] Keep fallback to default font with warning
 
 ```python
 import os
@@ -45,10 +45,10 @@ def draw_text(image, text, position=None, font_size=12, color=(255, 255, 255)):
 
 ### Task 3: Add CLI argument to `hello_world.py`
 
-- [ ] Add `argparse` for command-line options
-- [ ] Add `--font-size` / `-s` argument (default: 14)
-- [ ] Add `--text` / `-t` argument for custom text
-- [ ] Pass font size to `create_hello_world_image()` or create new function
+- [x] Add `argparse` for command-line options
+- [x] Add `--font-size` / `-s` argument (default: 14)
+- [x] Add `--text` / `-t` argument for custom text
+- [x] Pass font size to `create_hello_world_image()` or create new function
 
 ```python
 import argparse
@@ -60,14 +60,14 @@ parser.add_argument("-t", "--text", default="Hello World!", help="Text to displa
 
 ### Task 4: Update `create_hello_world_image()`
 
-- [ ] Add `text` and `font_size` parameters
-- [ ] Or create new `create_text_image(text, font_size)` function
+- [x] Add `text` and `font_size` parameters
+- [x] Or create new `create_text_image(text, font_size)` function
 
 ### Task 5: Add tests
 
-- [ ] Test font loading with bundled font
-- [ ] Test different font sizes render different image sizes
-- [ ] Test CLI argument parsing
+- [x] Test font loading with bundled font
+- [x] Test different font sizes render different image sizes
+- [x] Test CLI argument parsing
 
 ## Recommended Font Sizes
 

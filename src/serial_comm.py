@@ -75,16 +75,24 @@ def send_image_to_display(connection, image_data):
         return False
     
     try:
+        # Flush any pending data
+        connection.reset_input_buffer()
+        connection.reset_output_buffer()
+        
         # Create and send header
         header = create_bitmap_header()
         connection.write(header)
+        connection.flush()
         
         # Send image data in chunks
         for chunk in chunked(image_data, CHUNK_SIZE):
             connection.write(chunk)
         
+        # Ensure all data is sent
+        connection.flush()
+        
         # Small delay to ensure display processes the data
-        time.sleep(0.05)
+        time.sleep(0.1)
         return True
         
     except serial.SerialException:

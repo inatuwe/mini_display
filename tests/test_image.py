@@ -7,9 +7,11 @@ from src.image import (
     create_blank_image,
     draw_text,
     create_hello_world_image,
+    create_text_image,
     image_to_bytes,
     DISPLAY_WIDTH,
     DISPLAY_HEIGHT,
+    FONT_PATH,
 )
 
 
@@ -43,6 +45,21 @@ class TestCreateBlankImage:
         """Function should return an RGB image."""
         img = create_blank_image()
         assert img.mode == "RGB"
+
+
+class TestFontLoading:
+    """Tests for font loading functionality."""
+
+    def test_bundled_font_exists(self):
+        """Bundled DejaVuSans.ttf font should exist."""
+        import os
+        assert os.path.exists(FONT_PATH), f"Font not found at {FONT_PATH}"
+
+    def test_bundled_font_is_loadable(self):
+        """Bundled font should be loadable by PIL."""
+        from PIL import ImageFont
+        font = ImageFont.truetype(FONT_PATH, 14)
+        assert font is not None
 
 
 class TestDrawText:
@@ -95,6 +112,48 @@ class TestDrawText:
             if has_white:
                 break
         assert has_white, "White text was not drawn"
+
+    def test_different_font_sizes_produce_different_images(self):
+        """Different font sizes should produce visibly different images."""
+        img_small = create_blank_image(100, 50, bg_color=(0, 0, 0))
+        img_large = create_blank_image(100, 50, bg_color=(0, 0, 0))
+        result_small = draw_text(img_small, "A", font_size=10)
+        result_large = draw_text(img_large, "A", font_size=30)
+        
+        def count_non_black_pixels(img):
+            count = 0
+            for x in range(img.size[0]):
+                for y in range(img.size[1]):
+                    if img.getpixel((x, y)) != (0, 0, 0):
+                        count += 1
+            return count
+        
+        small_pixels = count_non_black_pixels(result_small)
+        large_pixels = count_non_black_pixels(result_large)
+        assert large_pixels > small_pixels, "Larger font should have more non-black pixels"
+
+
+class TestCreateTextImage:
+    """Tests for create_text_image function."""
+
+    def test_creates_image_with_custom_text(self):
+        """Function should create image with custom text."""
+        img = create_text_image("Custom")
+        assert isinstance(img, Image.Image)
+        assert img.size == (DISPLAY_WIDTH, DISPLAY_HEIGHT)
+
+    def test_accepts_font_size_parameter(self):
+        """Function should accept font size parameter."""
+        img = create_text_image("Test", font_size=20)
+        assert isinstance(img, Image.Image)
+
+    def test_different_font_sizes_work(self):
+        """Function should create images with different font sizes."""
+        img_small = create_text_image("A", font_size=10)
+        img_large = create_text_image("A", font_size=30)
+        assert img_small.size == img_large.size  # Same display size
+        # Images should be different (different font sizes)
+        assert img_small.tobytes() != img_large.tobytes()
 
 
 class TestCreateHelloWorldImage:
