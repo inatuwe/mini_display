@@ -11,14 +11,14 @@ CLI tool to interact with the WeAct Studio Display FS V1 (0.96 inch IPS LCD).
 
 ## Hardware
 
-| Specification | Value |
-|---------------|-------|
-| Device | WeAct Studio Display FS V1 |
-| Screen Size | 0.96 inch IPS LCD |
-| Resolution | 160x80 pixels |
-| Connection | USB-C (serial) |
-| Baud Rate | 115200 |
-| USB Chip | CH340/CH341 |
+| Specification | Value                       |
+|---------------|------------------------------|
+| Device        | WeAct Studio Display FS V1  |
+| Screen Size   | 0.96 inch IPS LCD           |
+| Resolution    | 160x80 pixels               |
+| Connection    | USB-C (serial)              |
+| Baud Rate     | 115200                      |
+| USB Chip      | CH340/CH341                 |
 
 ## Quick Start
 
