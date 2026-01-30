@@ -31,7 +31,7 @@ Extend the CLI to handle long text that doesn't fit on the 160x80 display, autom
     - Module exported in `lib.rs`
   - Notes: Use measurement functions from Task 1
 
-- [ ] **Task 3: Add delay CLI parameter**
+- [x] **Task 3: Add delay CLI parameter**
   - Scope: `src/main.rs`
   - Depends on: none
   - Acceptance:

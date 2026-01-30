@@ -20,6 +20,21 @@ struct Cli {
     /// Only check if display is connected
     #[arg(short, long)]
     detect: bool,
+
+    /// Delay between pages in seconds (must be positive)
+    #[arg(long, default_value = "2.0", value_parser = validate_positive_f32)]
+    delay: f32,
+}
+
+fn validate_positive_f32(s: &str) -> Result<f32, String> {
+    let value: f32 = s
+        .parse()
+        .map_err(|_| format!("'{}' is not a valid number", s))?;
+    if value <= 0.0 {
+        Err("delay must be a positive number".to_string())
+    } else {
+        Ok(value)
+    }
 }
 
 fn main() -> ExitCode {

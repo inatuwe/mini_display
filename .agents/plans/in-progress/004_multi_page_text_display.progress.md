@@ -33,6 +33,18 @@
 ### Iteration 3
 **Started:** 2026-01-30
 **Task:** Task 3 - Add delay CLI parameter
+**Status:** Complete
+
+**Changes:**
+- Added --delay flag (f32, default: 2.0)
+- Validation for positive number
+- Help text updated
+
+---
+
+### Iteration 4
+**Started:** 2026-01-30
+**Task:** Task 4 - Add loop and speed CLI parameters
 **Status:** In progress
 
 ---
