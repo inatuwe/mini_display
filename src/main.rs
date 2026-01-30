@@ -1,9 +1,11 @@
 use clap::{Parser, ValueEnum};
 use display_fs::{
     create_text_image, find_display_port, image_to_rgb565_bytes, is_display_connected,
-    open_connection, send_image_to_display,
+    open_connection, send_image_to_display, split_into_pages,
 };
 use std::process::ExitCode;
+use std::thread;
+use std::time::Duration;
 
 #[derive(Parser)]
 #[command(name = "display-fs")]
@@ -100,7 +102,7 @@ fn detect_display() -> ExitCode {
     ExitCode::FAILURE
 }
 
-fn display_text(text: &str, font_size: f32, _delay: f32, _loop_mode: bool) -> ExitCode {
+fn display_text(text: &str, font_size: f32, delay: f32, loop_mode: bool) -> ExitCode {
     println!("Looking for Display FS V1...");
 
     let port_info = match find_display_port() {
@@ -115,13 +117,21 @@ fn display_text(text: &str, font_size: f32, _delay: f32, _loop_mode: bool) -> Ex
 
     println!("✓ Found display on {}", port_info.name);
 
+    // Split text into pages
+    let pages = split_into_pages(text, font_size);
+    let pages = if pages.is_empty() {
+        vec![text.to_string()]
+    } else {
+        pages
+    };
+
+    let page_count = pages.len();
+    let needs_delay = page_count > 1 || loop_mode;
+
     println!(
-        "Creating image with text: '{}' (font size: {})",
-        text, font_size
+        "Text split into {} page(s) (font size: {})",
+        page_count, font_size
     );
-    let img = create_text_image(text, font_size);
-    let image_data = image_to_rgb565_bytes(&img);
-    println!("  Image size: {} bytes", image_data.len());
 
     println!("Opening connection to {}...", port_info.name);
     let mut connection = match open_connection(&port_info) {
@@ -133,17 +143,45 @@ fn display_text(text: &str, font_size: f32, _delay: f32, _loop_mode: bool) -> Ex
     };
     println!("✓ Connection opened");
 
-    println!("Sending image to display...");
-    match send_image_to_display(&mut connection, &image_data) {
-        Ok(()) => {
-            println!("✓ Image sent successfully!");
-            println!();
-            println!("'{}' should now be displayed!", text);
-            ExitCode::SUCCESS
+    let delay_duration = Duration::from_secs_f32(delay);
+
+    loop {
+        for (i, page) in pages.iter().enumerate() {
+            if page_count > 1 {
+                println!("Displaying page {}/{}...", i + 1, page_count);
+            }
+
+            let img = create_text_image(page, font_size);
+            let image_data = image_to_rgb565_bytes(&img);
+
+            match send_image_to_display(&mut connection, &image_data) {
+                Ok(()) => {
+                    if page_count == 1 && !loop_mode {
+                        println!("✓ Image sent successfully!");
+                        println!();
+                        println!("'{}' should now be displayed!", text);
+                    }
+                }
+                Err(e) => {
+                    println!("✗ Failed to send image: {}", e);
+                    return ExitCode::FAILURE;
+                }
+            }
+
+            // Wait between pages (but not after the last page in single-run mode)
+            if needs_delay {
+                let is_last_page = i == page_count - 1;
+                if !is_last_page || loop_mode {
+                    thread::sleep(delay_duration);
+                }
+            }
         }
-        Err(e) => {
-            println!("✗ Failed to send image: {}", e);
-            ExitCode::FAILURE
+
+        if !loop_mode {
+            break;
         }
+        // Loop mode: continue displaying pages indefinitely
     }
+
+    ExitCode::SUCCESS
 }

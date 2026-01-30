@@ -50,7 +50,7 @@ Extend the CLI to handle long text that doesn't fit on the 160x80 display, autom
     - Speed presets override delay if both provided
   - Notes: Loop mode runs until Ctrl+C
 
-- [ ] **Task 5: Implement multi-page display loop**
+- [x] **Task 5: Implement multi-page display loop**
   - Scope: `src/main.rs`, `src/lib.rs`
   - Depends on: Task 2, Task 4
   - Acceptance:
