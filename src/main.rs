@@ -22,19 +22,46 @@ enum Commands {
         /// Preset name to run
         #[arg(value_enum)]
         name: PresetName,
+
+        #[command(flatten)]
+        display: DisplayOptions,
     },
     /// List all available presets
     Presets,
     /// Demo mode: cycle through all presets in a loop
     Demo {
-        /// Delay between presets in seconds
-        #[arg(short, long, default_value = "5")]
-        delay: f32,
+        #[command(flatten)]
+        display: DisplayOptions,
     },
     /// Display text on the screen (default command)
     Show(ShowArgs),
     /// Show currently playing Spotify track
     Spotify(SpotifyArgs),
+}
+
+#[derive(clap::Args, Clone)]
+struct DisplayOptions {
+    /// Font size in pixels
+    #[arg(short = 's', long, default_value = "14")]
+    font_size: f32,
+
+    /// Delay between pages/updates in seconds (must be positive)
+    #[arg(short, long, default_value = "2.0", value_parser = validate_positive_f32)]
+    delay: f32,
+
+    /// Loop display continuously (until Ctrl+C)
+    #[arg(short, long)]
+    r#loop: bool,
+
+    /// Speed preset (overrides --delay if provided)
+    #[arg(long, value_enum)]
+    speed: Option<SpeedPreset>,
+}
+
+impl DisplayOptions {
+    pub fn effective_delay(&self) -> f32 {
+        self.speed.map_or(self.delay, |s| s.to_delay())
+    }
 }
 
 #[derive(clap::Args)]
@@ -43,44 +70,22 @@ struct ShowArgs {
     #[arg(default_value = "Hello World!")]
     text: String,
 
-    /// Font size in pixels
-    #[arg(short = 's', long, default_value = "14")]
-    font_size: f32,
-
     /// Only check if display is connected
-    #[arg(short, long)]
+    #[arg(long)]
     detect: bool,
-
-    /// Delay between pages in seconds (must be positive)
-    #[arg(long, default_value = "2.0", value_parser = validate_positive_f32)]
-    delay: f32,
-
-    /// Loop display continuously (until Ctrl+C)
-    #[arg(long, conflicts_with = "once")]
-    r#loop: bool,
 
     /// Display once only (default behavior)
     #[arg(long, conflicts_with = "loop")]
     once: bool,
 
-    /// Speed preset (overrides --delay if provided)
-    #[arg(long, value_enum)]
-    speed: Option<SpeedPreset>,
+    #[command(flatten)]
+    display: DisplayOptions,
 }
 
 #[derive(clap::Args)]
 struct SpotifyArgs {
-    /// Continuously update display with current track
-    #[arg(short, long)]
-    r#loop: bool,
-
-    /// Update interval in seconds (only with --loop)
-    #[arg(short, long, default_value = "2")]
-    interval: f32,
-
-    /// Font size in pixels
-    #[arg(short = 's', long, default_value = "18")]
-    font_size: f32,
+    #[command(flatten)]
+    display: DisplayOptions,
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -199,9 +204,9 @@ fn main() -> ExitCode {
     let cli = Cli::parse();
 
     match cli.command {
-        Some(Commands::Preset { name }) => run_preset(name),
+        Some(Commands::Preset { name, display }) => run_preset(name, display),
         Some(Commands::Presets) => list_presets(),
-        Some(Commands::Demo { delay }) => run_demo(delay),
+        Some(Commands::Demo { display }) => run_demo(display),
         Some(Commands::Show(args)) => run_show(args),
         Some(Commands::Spotify(args)) => run_spotify(args),
         None => {
@@ -219,11 +224,7 @@ fn run_show(args: ShowArgs) -> ExitCode {
         return detect_display();
     }
 
-    // Compute effective delay: speed preset overrides --delay
-    let delay = args.speed.map_or(args.delay, |s| s.to_delay());
-    let loop_mode = args.r#loop;
-
-    display_text(&args.text, args.font_size, delay, loop_mode)
+    display_text(&args.text, &args.display)
 }
 
 fn list_presets() -> ExitCode {
@@ -244,14 +245,14 @@ fn list_presets() -> ExitCode {
     ExitCode::SUCCESS
 }
 
-fn run_preset(name: PresetName) -> ExitCode {
+fn run_preset(name: PresetName, display: DisplayOptions) -> ExitCode {
     let (desc, _) = name.info();
     println!("Running preset: {}", desc);
 
     let text = name.run_command();
     println!("Output: {}", text);
 
-    display_text(&text, 14.0, 2.0, false)
+    display_text(&text, &display)
 }
 
 const ALL_PRESETS: [PresetName; 12] = [
@@ -269,7 +270,8 @@ const ALL_PRESETS: [PresetName; 12] = [
     PresetName::Fortune,
 ];
 
-fn run_demo(delay: f32) -> ExitCode {
+fn run_demo(display: DisplayOptions) -> ExitCode {
+    let delay = display.effective_delay();
     println!("Demo mode: cycling through all presets (Ctrl+C to stop)");
     println!("Delay: {}s between presets\n", delay);
 
@@ -299,7 +301,7 @@ fn run_demo(delay: f32) -> ExitCode {
             let text = preset.run_command();
             println!("[{}] {}", desc, text);
 
-            let img = create_text_image(&text, 14.0);
+            let img = create_text_image(&text, display.font_size);
             let image_data = image_to_rgb565_bytes(&img);
 
             if let Err(e) = send_image_to_display(&mut connection, &image_data) {
@@ -332,7 +334,7 @@ fn run_spotify(args: SpotifyArgs) -> ExitCode {
     };
 
     let mut last_track: Option<(String, String)> = None;
-    let interval = Duration::from_secs_f32(args.interval);
+    let interval = Duration::from_secs_f32(args.display.effective_delay());
 
     loop {
         let text = match get_now_playing() {
@@ -357,7 +359,7 @@ fn run_spotify(args: SpotifyArgs) -> ExitCode {
         let should_update = current != last_track;
 
         if should_update {
-            let img = create_text_image(&text, args.font_size);
+            let img = create_text_image(&text, args.display.font_size);
             let image_data = image_to_rgb565_bytes(&img);
 
             if let Err(e) = send_image_to_display(&mut connection, &image_data) {
@@ -369,7 +371,7 @@ fn run_spotify(args: SpotifyArgs) -> ExitCode {
             last_track = current;
         }
 
-        if !args.r#loop {
+        if !args.display.r#loop {
             break;
         }
 
@@ -404,7 +406,11 @@ fn detect_display() -> ExitCode {
     ExitCode::FAILURE
 }
 
-fn display_text(text: &str, font_size: f32, delay: f32, loop_mode: bool) -> ExitCode {
+fn display_text(text: &str, display: &DisplayOptions) -> ExitCode {
+    let font_size = display.font_size;
+    let delay = display.effective_delay();
+    let loop_mode = display.r#loop;
+
     println!("Looking for Display FS V1...");
 
     let port_info = match find_display_port() {
@@ -419,7 +425,6 @@ fn display_text(text: &str, font_size: f32, delay: f32, loop_mode: bool) -> Exit
 
     println!("✓ Found display on {}", port_info.name);
 
-    // Split text into pages
     let pages = split_into_pages(text, font_size);
     let pages = if pages.is_empty() {
         vec![text.to_string()]
@@ -470,7 +475,6 @@ fn display_text(text: &str, font_size: f32, delay: f32, loop_mode: bool) -> Exit
                 }
             }
 
-            // Wait between pages (but not after the last page in single-run mode)
             if needs_delay {
                 let is_last_page = i == page_count - 1;
                 if !is_last_page || loop_mode {
@@ -482,7 +486,6 @@ fn display_text(text: &str, font_size: f32, delay: f32, loop_mode: bool) -> Exit
         if !loop_mode {
             break;
         }
-        // Loop mode: continue displaying pages indefinitely
     }
 
     ExitCode::SUCCESS
