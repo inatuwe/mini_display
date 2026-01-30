@@ -2,7 +2,13 @@
 Tests for COM port enumeration functionality.
 """
 import pytest
-from src.com_ports import list_com_ports, format_port_info
+from src.com_ports import (
+    list_com_ports,
+    format_port_info,
+    is_display_fs_connected,
+    find_display_port,
+    DISPLAY_FS_VID_PID,
+)
 
 
 class TestListComPorts:
@@ -51,3 +57,85 @@ class TestFormatPortInfo:
         result = format_port_info(MockPort())
         assert "COM1" in result
         assert "Test Device" in result
+
+
+class TestIsDisplayFsConnected:
+    """Tests for is_display_fs_connected function."""
+
+    def test_returns_true_if_known_vid_pid_found(self):
+        """Function should return True if known VID/PID found."""
+        class MockPort:
+            device = "COM3"
+            description = "USB-SERIAL CH340"
+            hwid = "USB VID:PID=1A86:7523"
+            vid = 0x1A86
+            pid = 0x7523
+        
+        mock_ports = [MockPort()]
+        result = is_display_fs_connected(mock_ports)
+        assert result is True
+
+    def test_returns_false_if_no_matching_device(self):
+        """Function should return False if no matching device."""
+        class MockPort:
+            device = "COM1"
+            description = "Some Other Device"
+            hwid = "USB VID:PID=ABCD:1234"
+            vid = 0xABCD
+            pid = 0x1234
+        
+        mock_ports = [MockPort()]
+        result = is_display_fs_connected(mock_ports)
+        assert result is False
+
+    def test_handles_empty_port_list(self):
+        """Function should return False for empty port list."""
+        result = is_display_fs_connected([])
+        assert result is False
+
+    def test_uses_system_ports_if_none_provided(self):
+        """Function should use system ports if no list provided."""
+        result = is_display_fs_connected()
+        assert isinstance(result, bool)
+
+
+class TestFindDisplayPort:
+    """Tests for find_display_port function."""
+
+    def test_returns_port_if_found(self):
+        """Function should return port object if found."""
+        class MockPort:
+            device = "COM3"
+            description = "USB-SERIAL CH340"
+            hwid = "USB VID:PID=1A86:7523"
+            vid = 0x1A86
+            pid = 0x7523
+        
+        mock_port = MockPort()
+        mock_ports = [mock_port]
+        result = find_display_port(mock_ports)
+        assert result is mock_port
+
+    def test_returns_none_if_not_found(self):
+        """Function should return None if not found."""
+        class MockPort:
+            device = "COM1"
+            description = "Some Other Device"
+            hwid = "USB VID:PID=ABCD:1234"
+            vid = 0xABCD
+            pid = 0x1234
+        
+        mock_ports = [MockPort()]
+        result = find_display_port(mock_ports)
+        assert result is None
+
+    def test_returns_none_for_empty_list(self):
+        """Function should return None for empty port list."""
+        result = find_display_port([])
+        assert result is None
+
+    def test_uses_system_ports_if_none_provided(self):
+        """Function should use system ports if no list provided."""
+        result = find_display_port()
+        # Result is either a port object or None
+        assert result is None or hasattr(result, 'device')
