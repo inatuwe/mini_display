@@ -1,6 +1,6 @@
 # Plan 004: Spotify Command
 
-**Status:** IN-PROGRESS  
+**Status:** COMPLETED  
 **Priority:** Medium  
 **Complexity:** Low-Medium
 
@@ -63,7 +63,7 @@ Add a dedicated `spotify` subcommand that shows the currently playing Spotify so
     - Exits cleanly on Ctrl+C
     - `just ci` passes
 
-- [ ] (manual-verify) **Task 6: Manual testing**
+- [x] (manual-verify) **Task 6: Manual testing**
   - Scope: N/A
   - Depends on: Task 5
   - Acceptance:
