@@ -72,7 +72,7 @@ Extend the CLI to handle long text that doesn't fit on the 160x80 display, autom
     - All tests pass with `just test`
   - Notes: Use inline `#[cfg(test)]` module
 
-- [ ] **Task 7: Integration verification**
+- [ ] (manual-verify) **Task 7: Integration verification**
   - Scope: `src/main.rs`
   - Depends on: Task 5, Task 6
   - Acceptance:
