@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 # Display dimensions for WeAct Studio Display FS V1 (0.96 inch)
+# Landscape mode: 160 wide x 80 tall
 DISPLAY_WIDTH = 160
 DISPLAY_HEIGHT = 80
 
@@ -72,7 +73,8 @@ def create_hello_world_image():
         PIL Image object with "Hello World!" text centered.
     """
     image = create_blank_image()
-    return draw_text(image, "Hello World!")
+    # Landscape mode - single line fits better
+    return draw_text(image, "Hello from SoCraTes!", font_size=14)
 
 
 def image_to_bytes(image):
@@ -84,11 +86,13 @@ def image_to_bytes(image):
     - 6 bits for Green (bits 10-5)
     - 5 bits for Blue (bits 4-0)
     
+    WeAct Studio display uses little-endian byte order.
+    
     Args:
         image: PIL Image object in RGB mode.
         
     Returns:
-        bytes: Image data in RGB565 format (big-endian).
+        bytes: Image data in RGB565 format (little-endian).
     """
     # Ensure image is in RGB mode
     if image.mode != "RGB":
@@ -110,8 +114,8 @@ def image_to_bytes(image):
             b5 = (b >> 3) & 0x1F
             # Pack into 16-bit value: RRRRR GGGGGG BBBBB
             rgb565 = (r5 << 11) | (g6 << 5) | b5
-            # Big-endian: high byte first
-            data.append((rgb565 >> 8) & 0xFF)
+            # Little-endian: low byte first
             data.append(rgb565 & 0xFF)
+            data.append((rgb565 >> 8) & 0xFF)
     
     return bytes(data)

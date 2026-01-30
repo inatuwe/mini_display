@@ -10,6 +10,7 @@ from serial.tools import list_ports
 DISPLAY_FS_VID_PID = [
     (0x1A86, 0x7523),  # CH340
     (0x1A86, 0x5523),  # CH341
+    (0x1A86, 0xFE0C),  # WeAct Studio Display FS V1
 ]
 
 # Default connection settings
@@ -112,5 +113,9 @@ def close_connection(connection):
     """
     if connection is None:
         return
-    if connection.is_open:
-        connection.close()
+    try:
+        if connection.is_open:
+            connection.close()
+    except Exception:
+        # Ignore errors when closing - connection may already be closed
+        pass
