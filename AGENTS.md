@@ -53,8 +53,12 @@ mini_display/
 ### Image to Bytes Conversion (Task 6) ✅
 - `image_to_bytes(image)` - Convert PIL image to RGB565 bytes for serial transmission
 
+### Send Data to Display (Task 7) ✅
+- `send_bytes(connection, data)` - Send bytes to serial connection
+- `create_display_command(image_data)` - Wrap image data with display command protocol
+
 ## Pending Features
-- Task 7: Send Data to Display
+- Task 8: Main Detection Script
 - Task 6: Image Sending
 - Task 7: Hello World Display
 

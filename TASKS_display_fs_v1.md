@@ -132,25 +132,25 @@ Small, autonomous tasks to implement the Display FS V1 interaction program.
 
 ---
 
-## Task 7: Send Data to Display
+## Task 7: Send Data to Display ✅
 **Goal:** Send image data to display via serial
 
 ### 7.1 Write test for sending bytes
-- [ ] Test: Function sends bytes to serial connection
-- [ ] Test: Function handles connection errors
-- [ ] Test: Function returns success/failure status
+- [x] Test: Function sends bytes to serial connection
+- [x] Test: Function handles connection errors
+- [x] Test: Function returns success/failure status
 
 ### 7.2 Implement send bytes function
-- [ ] Implement: `send_bytes(connection, data)` function
-- [ ] Verify: Test passes
+- [x] Implement: `send_bytes(connection, data)` function
+- [x] Verify: Test passes
 
 ### 7.3 Write test for display command protocol (if needed)
-- [ ] Test: Function wraps data with correct header/footer
-- [ ] Test: Function includes correct command bytes
+- [x] Test: Function wraps data with correct header/footer
+- [x] Test: Function includes correct command bytes
 
 ### 7.4 Implement display command protocol
-- [ ] Implement: `create_display_command(image_data)` function
-- [ ] Verify: Test passes
+- [x] Implement: `create_display_command(image_data)` function
+- [x] Verify: Test passes
 
 ---
 
