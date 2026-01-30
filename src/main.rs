@@ -367,7 +367,7 @@ fn run_spotify(args: SpotifyArgs) -> ExitCode {
                 return ExitCode::FAILURE;
             }
 
-            println!("{}", text.replace('\n', " | "));
+            println!("{}", text.replace('\n', " "));
             last_track = current;
         }
 
