@@ -71,6 +71,7 @@ just ci            # Full check: fmt + lint + test
 
 # Build and run
 just build         # Build release binary
+just install       # Build and update ./display-fs
 just run "Hi"      # Run with custom text
 just detect        # Detect display
 ```

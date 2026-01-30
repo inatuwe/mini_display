@@ -25,6 +25,12 @@ ci: fmt lint test
 build:
     cargo build --release
 
+# Build and install local binary
+install: build
+    rm -f ./display-fs
+    cp target/release/display-fs ./display-fs
+    @echo "✓ Installed ./display-fs"
+
 # Run with text
 run text="Hello World!":
     cargo run -- "{{text}}"
