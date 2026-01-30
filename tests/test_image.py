@@ -171,5 +171,5 @@ class TestImageToBytes:
         img = create_blank_image(1, 1, bg_color=(255, 0, 0))
         result = image_to_bytes(img)
         # RGB565: R=31 (5 bits), G=0 (6 bits), B=0 (5 bits)
-        # = 11111 000000 00000 = 0xF800 (big-endian)
-        assert result == b'\xf8\x00'
+        # = 11111 000000 00000 = 0xF800 (little-endian: 0x00F8)
+        assert result == b'\x00\xf8'

@@ -15,7 +15,7 @@ Standalone CLI application to interact with the Display FS V1 (0.96 inch), detec
 
 ## Project Structure
 
-```
+```text
 mini_display/
 ├── AGENTS.md                    # This file - project instructions
 ├── .agents/

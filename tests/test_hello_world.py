@@ -20,7 +20,7 @@ class TestHelloWorldScript:
         with patch('hello_world.find_display_port') as mock_find_port:
             with patch('hello_world.open_connection') as mock_open:
                 with patch('hello_world.close_connection') as mock_close:
-                    with patch('hello_world.send_bytes') as mock_send:
+                    with patch('hello_world.send_image_to_display') as mock_send:
                         mock_find_port.return_value = mock_port
                         mock_conn = MagicMock()
                         mock_open.return_value = mock_conn
@@ -56,7 +56,7 @@ class TestHelloWorldScript:
         with patch('hello_world.find_display_port') as mock_find_port:
             with patch('hello_world.open_connection') as mock_open:
                 with patch('hello_world.close_connection') as mock_close:
-                    with patch('hello_world.send_bytes') as mock_send:
+                    with patch('hello_world.send_image_to_display') as mock_send:
                         mock_find_port.return_value = mock_port
                         mock_conn = MagicMock()
                         mock_open.return_value = mock_conn
