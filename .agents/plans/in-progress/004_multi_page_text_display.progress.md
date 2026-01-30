@@ -73,6 +73,18 @@
 ### Iteration 6
 **Started:** 2026-01-30
 **Task:** Task 6 - Add unit tests for text splitting
+**Status:** Complete
+
+**Notes:**
+- Tests were already added in Task 2 (src/text.rs)
+- All acceptance criteria met: empty string, single word, multiple pages, word boundaries, newlines
+- 8 tests total in text module, all passing
+
+---
+
+### Iteration 7
+**Started:** 2026-01-30
+**Task:** Task 7 - Integration verification
 **Status:** In progress
 
 ---

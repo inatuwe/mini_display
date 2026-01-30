@@ -60,7 +60,7 @@ Extend the CLI to handle long text that doesn't fit on the 160x80 display, autom
     - Single page text still works (no delay needed)
   - Notes: Use `std::thread::sleep` for delays
 
-- [ ] **Task 6: Add unit tests for text splitting**
+- [x] **Task 6: Add unit tests for text splitting**
   - Scope: `src/text.rs`
   - Depends on: Task 2
   - Acceptance:
