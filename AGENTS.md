@@ -21,12 +21,13 @@ mini_display/
 ├── Cargo.toml                   # Rust project configuration
 ├── .agents/
 │   ├── research/                # Research and reference material
-│   │   ├── display_fs_v1_research.md
-│   │   └── python_implementation_completed.md
-│   └── plans/                   # Implementation plans
-│       ├── todo/                # Planned but not started
-│       ├── in-progress/         # Currently being worked on
-│       └── completed/           # Finished and verified
+│   ├── plans/                   # Implementation plans
+│   │   ├── todo/                # Planned but not started
+│   │   ├── in-progress/         # Currently being worked on
+│   │   └── completed/           # Finished and verified
+│   └── skills/                  # Agent skills
+│       ├── ralph/               # Autonomous implementation loops
+│       └── research/            # Deep research workflow
 ├── src/                         # Rust source modules
 │   ├── main.rs                  # CLI entry point
 │   ├── lib.rs                   # Library exports
