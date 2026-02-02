@@ -33,7 +33,9 @@ mini_display/
 │   ├── lib.rs                   # Library exports
 │   ├── port.rs                  # COM port detection and connection
 │   ├── image.rs                 # Image creation and RGB565 conversion
-│   └── protocol.rs              # Display command protocol
+│   ├── protocol.rs              # Display command protocol
+│   ├── spotify.rs               # Spotify now-playing integration (macOS)
+│   └── text.rs                  # Text wrapping and pagination
 └── assets/
     └── fonts/                   # Font files for text rendering
         └── DejaVuSans.ttf       # Embedded in Rust binary

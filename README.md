@@ -34,6 +34,15 @@ CLI tool to interact with the WeAct Studio Display FS V1 (0.96 inch IPS LCD).
 
 # Custom font size
 ./display-fs show -s 20 "Big Text"
+
+# Show current Spotify track (macOS)
+./display-fs spotify --loop
+
+# Run a preset (clock, git status, etc.)
+./display-fs preset clock --loop
+
+# Demo mode: cycle through all presets
+./display-fs demo
 ```
 
 ## Installation
@@ -149,6 +158,44 @@ The `--orientation` flag switches between landscape (160x80, default) and portra
 ./display-fs show --detect
 ```
 
+### Spotify Now Playing (macOS)
+
+Display the currently playing Spotify track:
+
+```bash
+# Show once
+./display-fs spotify
+
+# Live updates (refresh every 2 seconds)
+./display-fs spotify --loop
+
+# Faster refresh
+./display-fs spotify --loop --speed fast
+```
+
+### Presets
+
+Run built-in system information presets:
+
+```bash
+# List available presets
+./display-fs presets
+
+# Run a preset
+./display-fs preset clock
+./display-fs preset git
+./display-fs preset ip
+./display-fs preset whoami
+
+# Loop a preset (live updates)
+./display-fs preset cpu --loop
+
+# Demo mode: cycle through all presets
+./display-fs demo
+```
+
+Available presets: `clock`, `datetime`, `uptime`, `git`, `ip`, `whoami`, `pwd`, `cpu`, `memory`, `docker`, `spotify`, `fortune`
+
 ## Project Structure
 
 ```text
@@ -159,7 +206,9 @@ mini_display/
 │   ├── lib.rs             # Library exports
 │   ├── port.rs            # USB port detection
 │   ├── image.rs           # Image creation & RGB565
-│   └── protocol.rs        # Display protocol
+│   ├── protocol.rs        # Display protocol
+│   ├── spotify.rs         # Spotify now-playing (macOS)
+│   └── text.rs            # Text wrapping & pagination
 └── assets/
     └── fonts/             # Font files (embedded in binary)
 ```
